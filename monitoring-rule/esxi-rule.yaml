@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: esxi-rule
+  namespace: monitoring
+data:
+  esxi-monitoring-rules.yml: |-
+    groups:
+    - name: esxi-vm-rule
+      rules:
+      - alert: VM-Down
+        annotations:
+          description: "VM-Down：`{{$labels.vm_name}}` in `{{$labels.host_name}}`"
+          runbook_url: https://{{$labels.host_name}}/ui/#/login
+          summary:  "VM：`{{$labels.vm_name}}` in `{{$labels.host_name}}` is down"
+        expr: vmware_vm_power_state{instance=~"192.168.100.35:3270.*"} < 1
+        for: 5m
+        labels:
+          severity: warning
+
+      - alert: VM-1mounth-No-use
+        annotations:
+          description: "VM：`{{$labels.vm_name}}` in `{{$labels.host_name}}`"
+          runbook_url: https://{{$labels.host_name}}/ui/#/login
+          summary:  "VM：`{{$labels.vm_name}}` in `{{$labels.host_name}}`"
+        expr: vmware_vm_power_state{instance=~"192.168.100.35:3270.*"} < 1
+        for: 720h
+        labels:
+          severity: attention
+

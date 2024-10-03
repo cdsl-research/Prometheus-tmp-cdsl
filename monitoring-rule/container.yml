@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: container-rule
+  namespace: monitoring
+data:
+  container-monitoring-rules.yml: |-
+    groups:
+    - name: pod-rule
+      rules:
+      - alert: pod-status
+        annotations:
+          description: "Pod in {{$labels.exported_namespace}} is down"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod in {{$labels.exported_namespace}} is down"
+        expr: kube_pod_container_status_running{exported_namespace=~"dns-dhcp|mysql|jump|stns"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      - alert: pod-memory-usage
+        annotations:
+          description: "Pod {{$labels.pod}} memory usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod {{$labels.pod}} memory usage high"
+        expr: container_memory_usage_bytes{namespace=~"dns-dhcp|mysql|jump|stns"} >= 700000000  # 700MB
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: pod-cpu-usage
+        annotations:
+          description: "Pod {{$labels.pod}} CPU usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod {{$labels.pod}} CPU usage high"
+        expr: rate(container_cpu_usage_seconds_total{namespace=~"dns-dhcp|mysql|jump|stns"}[1m]) >= 0.7
+        for: 3m
+        labels:
+          severity: warning
+      
+      - alert: pod-disk-read-count-high
+        annotations:
+          description: "HighDiskReadCountPod {{$labels.pod}}"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod {{$labels.pod}} read count high"
+        expr: rate(container_fs_reads_total{namespace=~"dns-dhcp|mysql|jump|stns"}[10m]) >= 100
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: pod-disk-write
+        annotations:
+          description: "HighDiskWriteCountPod {{$labels.pod}}"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod {{$labels.pod}} write count high"
+        expr: rate(container_fs_writes_total{namespace=~"dns-dhcp|mysql|jump|stns"}[10m]) >= 100
+        for: 3m
+        labels:
+          severity: warning

@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-rule
+  namespace: monitoring
+data:
+  node-monitoring-rules.yml: |-
+    groups:
+    - name: Node-check
+      rules:
+      - alert: Node-up-check
+        annotations:
+          description: "Node {{$labels.node_kubernetes_io_instance_type}} down"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Node {{$labels.node_kubernetes_io_instance_type}} down"
+        expr: up{node_kubernetes_io_instance_type="k3s"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      - alert: node-cpu-high
+        annotations:
+          description: "Node {{$labels.node_kubernetes_io_instance_type}} CPU usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Node {{$labels.node_kubernetes_io_instance_type}} CPU usage high"
+        expr: rate(node_cpu_seconds_total{mode!="idle"}[1m]) >= 1
+        for: 3m
+        labels:
+          severity: "warning"
+
+      - alert: node-memory-high
+        annotations:
+          description: "Node {{$labels.node_kubernetes_io_instance_type}} memory usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Node {{$labels.node_kubernetes_io_instance_type}} memory usage high"
+        expr: 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) >= 80
+        for: 3m
+        labels:
+          severity: "warning"
+
+      - alert: node-disk-usage-high
+        annotations:
+          description: "Node {{$labels.node_kubernetes_io_instance_type}} disk usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Node {{$labels.node_kubernetes_io_instance_type}} disk usage high"
+        expr: 1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) >= 0.8
+        for: 3m
+        labels:
+          severity: "warning"
+
+      - alert: node-disk-read-time-delay
+        annotations:
+          description: "Node {{$labels.node_kubernetes_io_instance_type}} disk read time delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Node {{$labels.node_kubernetes_io_instance_type}} disk read time delay"
+        expr: rate(node_disk_reads_completed_total[1m]) >= 500
+        for: 3m
+        labels:
+          severity: "warning"
+
+      - alert: node-disk-write-time-delay
+        annotations:
+          description: "Node {{$labels.node_kubernetes_io_instance_type}} disk write time delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Node {{$labels.node_kubernetes_io_instance_type}} disk write time delay"
+        expr: rate(node_disk_write_time_seconds_total[1m]) >= 100
+        for: 3m
+        labels:
+          severity: "warning"
+

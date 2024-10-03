@@ -1,0 +1,209 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: alertmanager
+data:
+  config.yml: |-
+    global:
+      resolve_timeout: 1m
+      slack_api_url: https://hooks.slack.com/services/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
+
+    inhibit_rules:
+    - equal:
+      - namespace
+      - alertname
+      source_matchers:
+      - severity = critical
+      target_matchers:
+      - severity =~ warning|info|attention  # 新しい優先度 'attention' を追加
+    - equal:
+      - namespace
+      - alertname
+      source_matchers:
+      - severity = warning
+      target_matchers:
+      - severity =~ info|attention
+    - equal:
+      - namespace
+      source_matchers:
+      - alertname = InfoInhibitor
+      target_matchers:
+      - severity = info
+    - target_matchers:
+      - alertname = InfoInhibitor
+
+
+    receivers:
+    - name: "null"
+    - name: slack
+      slack_configs:
+      - channel: '#monitoring-cdsl-alert'
+        send_resolved: true
+        # textはアラートの内容
+        # if文を使ってるところは，もしそのラベルの内容が無ければN/Aと表示するようにしている
+        text: |-
+          {{ range .Alerts }}
+            *Alert:* {{ .Labels.alertname }} - `{{ .Labels.severity }}`
+            *Description:* {{ if .Annotations.description }}{{ .Annotations.description }}{{ else }}No description{{ end }}
+            *Runbook:* {{ if .Annotations.runbook_url }}{{ .Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
+            {{ if (and (not .Labels.namespace) (not .Labels.exported_namespace) (not .Labels.pod)) }}*Details:*
+              • *alertname:* `{{ .Labels.alertname }}`
+              • *instance:* {{ if .Labels.instance }}`{{ .Labels.instance }}`{{ else }}`N/A`{{ end }}
+              • *id:* {{ if .Labels.id }} `{{ .Labels.id }}` {{ else }} `N/A` {{ end }}
+              • *job:* {{ if .Labels.job }}`{{ .Labels.job }}`{{ else }}`N/A`{{ end }}
+            {{ else }}
+              *Details:*
+              • *alertname:* `{{ .Labels.alertname }}`
+              • *instance:* {{ if .Labels.instance }}`{{ .Labels.instance }}`{{ else }}`N/A`{{ end }}
+              • *namespace:* `{{ if .Labels.exported_namespace }}{{ .Labels.exported_namespace }}{{ else if .Labels.namespace }}{{ .Labels.namespace }}{{ else }}N/A{{ end }}`
+              • *pod:* {{ if .Labels.pod }}`{{ .Labels.pod }}`{{ else }}`N/A`{{ end }}
+              • *job:* {{ if .Labels.job }}`{{ .Labels.job }}`{{ else }}`N/A`{{ end }}
+            {{ end }}
+          {{ end }}
+        title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing
+          | len }}{{ end }}] Monitoring Event Notification'
+    
+    route:
+      group_by:
+      - severity
+      group_interval: 10m
+      group_wait: 1m
+      receiver: "null"
+      repeat_interval: 12h
+      routes:
+      - match:
+          alertname: DeadMansSwitch
+        receiver: "null"
+      - continue: true
+        match: null
+        receiver: slack
+    
+    templates:
+    - /etc/alertmanager/config/*.tmpl
+
+    # 以下はコメントアウトされたサンプルの設定です
+    #
+    # global:
+    #   # The smarthost and SMTP sender used for mail notifications.
+    #   smtp_smarthost: 'localhost:25'
+    #   smtp_from: 'alertmanager@example.org'
+    #   smtp_auth_username: 'alertmanager'
+    #   smtp_auth_password: 'password'
+    #   # The auth token for Hipchat.
+    #   hipchat_auth_token: '1234556789'
+    #   # Alternative host for Hipchat.
+    #   hipchat_url: 'https://hipchat.foobar.org/'
+    #
+    # # The directory from which notification templates are read.
+    # templates:
+    # - '/etc/alertmanager/template/*.tmpl'
+    #
+    # # The root route on which each incoming alert enters.
+    # route:
+    #   # The labels by which incoming alerts are grouped together. For example,
+    #   # multiple alerts coming in for cluster=A and alertname=LatencyHigh would
+    #   # be batched into a single group.
+    #   group_by: ['alertname', 'cluster', 'service']
+    #
+    #   # When a new group of alerts is created by an incoming alert, wait at
+    #   # least 'group_wait' to send the initial notification.
+    #   # This way ensures that you get multiple alerts for the same group that start
+    #   # firing shortly after another are batched together on the first
+    #   # notification.
+    #   group_wait: 30s
+    #
+    #   # When the first notification was sent, wait 'group_interval' to send a batch
+    #   # of new alerts that started firing for that group.
+    #   group_interval: 5m
+    #
+    #   # If an alert has successfully been sent, wait 'repeat_interval' to
+    #   # resend them.
+    #   repeat_interval: 3h
+    #
+    #   # A default receiver
+    #   receiver: team-X-mails
+    #
+    #   # All the above attributes are inherited by all child routes and can
+    #   # overwritten on each.
+    #
+    #   # The child route trees.
+    #   routes:
+    #   # This routes performs a regular expression match on alert labels to
+    #   # catch alerts that are related to a list of services.
+    #   - match_re:
+    #       service: ^(foo1|foo2|baz)$
+    #     receiver: team-X-mails
+    #     # The service has a sub-route for critical alerts, any alerts
+    #     # that do not match, i.e. severity != critical, fall-back to the
+    #     # parent node and are sent to 'team-X-mails'
+    #     routes:
+    #     - match:
+    #         severity: critical
+    #       receiver: team-X-pager
+    #   - match:
+    #       service: files
+    #     receiver: team-Y-mails
+    #
+    #     routes:
+    #     - match:
+    #         severity: critical
+    #       receiver: team-Y-pager
+    #
+    #   # This route handles all alerts coming from a database service. If there's
+    #   # no team to handle it, it defaults to the DB team.
+    #   - match:
+    #       service: database
+    #     receiver: team-DB-pager
+    #     # Also group alerts by affected database.
+    #     group_by: [alertname, cluster, database]
+    #     routes:
+    #     - match:
+    #         owner: team-X
+    #       receiver: team-X-pager
+    #     - match:
+    #         owner: team-Y
+    #       receiver: team-Y-pager
+    #
+    #
+    # # Inhibition rules allow to mute a set of alerts given that another alert is
+    # # firing.
+    # # We use this to mute any warning-level notifications if the same alert is
+    # # already critical.
+    # inhibit_rules:
+    # - source_match:
+    #     severity: 'critical'
+    #   target_match:
+    #     severity: 'warning'
+    #   # Apply inhibition if the alertname is the same.
+    #   equal: ['alertname', 'cluster', 'service']
+    #
+    #
+    # receivers:
+    # - name: 'team-X-mails'
+    #   email_configs:
+    #   - to: 'team-X+alerts@example.org'
+    #
+    # - name: 'team-X-pager'
+    #   email_configs:
+    #   - to: 'team-X+alerts-critical@example.org'
+    #   pagerduty_configs:
+    #   - service_key: <team-X-key>
+    #
+    # - name: 'team-Y-mails'
+    #   email_configs:
+    #   - to: 'team-Y+alerts@example.org'
+    #
+    # - name: 'team-Y-pager'
+    #   pagerduty_configs:
+    #   - service_key: <team-Y-key>
+    #
+    # - name: 'team-DB-pager'
+    #   pagerduty_configs:
+    #   - service_key: <team-DB-key>
+    # - name: 'team-X-hipchat'
+    #   hipchat_configs:
+    #   - auth_token: <auth_token>
+    #     room_id: 85
+    #     message_format: html
+    #     notify: true
+

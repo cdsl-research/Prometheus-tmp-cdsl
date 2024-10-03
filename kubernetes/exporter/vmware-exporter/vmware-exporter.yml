@@ -1,0 +1,342 @@
+#jasmine用deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmware-exporter-jasmine
+spec:
+  selector:
+    matchLabels:
+      app: vmware-exporter
+      release: jasmine
+  template:
+    metadata:
+      labels:
+        app: vmware-exporter
+        release: jasmine
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9272"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: vmware-exporter
+        image: "pryorda/vmware_exporter:latest"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9272
+          name: http
+        envFrom:
+        - configMapRef:
+            name: vmware-exporter-config-jasmine
+        - secretRef:
+            name: vmware-exporter-password-jasmine
+---
+#rose用deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmware-exporter-rose
+spec:
+  selector:
+    matchLabels:
+      app: vmware-exporter
+      release: rose
+  template:
+    metadata:
+      labels:
+        app: vmware-exporter
+        release: rose
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9272"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: vmware-exporter
+        image: "pryorda/vmware_exporter:latest"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9272
+          name: http
+        envFrom:
+        - configMapRef:
+            name: vmware-exporter-config-rose
+        - secretRef:
+            name: vmware-exporter-password-rose
+---
+#lotus用deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmware-exporter-lotus
+spec:
+  selector:
+    matchLabels:
+      app: vmware-exporter
+      release: lotus
+  template:
+    metadata:
+      labels:
+        app: vmware-exporter
+        release: lotus
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9272"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: vmware-exporter
+        image: "pryorda/vmware_exporter:latest"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9272
+          name: http
+        envFrom:
+        - configMapRef:
+            name: vmware-exporter-config-lotus
+        - secretRef:
+            name: vmware-exporter-password-lotus
+---
+#violet用deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmware-exporter-violet
+spec:
+  selector:
+    matchLabels:
+      app: vmware-exporter
+      release: violet
+  template:
+    metadata:
+      labels:
+        app: vmware-exporter
+        release: violet
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9272"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: vmware-exporter
+        image: "pryorda/vmware_exporter:latest"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9272
+          name: http
+        envFrom:
+        - configMapRef:
+            name: vmware-exporter-config-violet
+        - secretRef:
+            name: vmware-exporter-password-violet
+---
+#mint用deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmware-exporter-mint
+spec:
+  selector:
+    matchLabels:
+      app: vmware-exporter
+      release: mint
+  template:
+    metadata:
+      labels:
+        app: vmware-exporter
+        release: mint
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9272"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: vmware-exporter
+        image: "pryorda/vmware_exporter:latest"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9272
+          name: http
+        envFrom:
+        - configMapRef:
+            name: vmware-exporter-config-mint
+        - secretRef:
+            name: vmware-exporter-password-mint
+---
+#plum用deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmware-exporter-plum
+spec:
+  selector:
+    matchLabels:
+      app: vmware-exporter
+      release: plum
+  template:
+    metadata:
+      labels:
+        app: vmware-exporter
+        release: plum
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9272"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: vmware-exporter
+        image: "pryorda/vmware_exporter:latest"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9272
+          name: http
+        envFrom:
+        - configMapRef:
+            name: vmware-exporter-config-plum
+        - secretRef:
+            name: vmware-exporter-password-plum
+---
+#lily用deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmware-exporter-lily
+spec:
+  selector:
+    matchLabels:
+      app: vmware-exporter
+      release: lily
+  template:
+    metadata:
+      labels:
+        app: vmware-exporter
+        release: lily
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9272"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: vmware-exporter
+        image: "pryorda/vmware_exporter:latest"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9272
+          name: http
+        envFrom:
+        - configMapRef:
+            name: vmware-exporter-config-lily
+        - secretRef:
+            name: vmware-exporter-password-lily
+---
+#jasmine用service
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmware-exporter-service-jasmine
+spec:
+  selector:
+    app: vmware-exporter
+    release: jasmine
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9272
+      nodePort: 32700
+  type: NodePort
+---
+#rose用service
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmware-exporter-service-rose
+spec:
+  selector:
+    app: vmware-exporter
+    release: rose
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9272
+      nodePort: 32701
+  type: NodePort
+---
+#lotus用service
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmware-exporter-service-lotus
+spec:
+  selector:
+    app: vmware-exporter
+    release: lotus
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9272
+      nodePort: 32702
+  type: NodePort
+---
+#violet用service
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmware-exporter-service-violet
+spec:
+  selector:
+    app: vmware-exporter
+    release: violet
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9272
+      nodePort: 32703
+  type: NodePort
+---
+#mint用service
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmware-exporter-service-mint
+spec:
+  selector:
+    app: vmware-exporter
+    release: mint
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9272
+      nodePort: 32704
+  type: NodePort
+---
+#plum用service
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmware-exporter-service-plum
+spec:
+  selector:
+    app: vmware-exporter
+    release: plum
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9272
+      nodePort: 32705
+  type: NodePort
+---
+#lily用service
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmware-exporter-service-lily
+spec:
+  selector:
+    app: vmware-exporter
+    release: lily
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9272
+      nodePort: 32706
+  type: NodePort

@@ -1,0 +1,97 @@
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config-jasmine
+apiVersion: v1
+data:
+  VSPHERE_USER: "monitoring"
+  VSPHERE_HOST: "192.168.100.22" #jasmine
+  VSPHERE_IGNORE_SSL: "True"
+  VSPHERE_COLLECT_HOSTS: "True"
+  VSPHERE_COLLECT_DATASTORES: "True"
+  VSPHERE_COLLECT_VMS: "True"
+---
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config-rose
+apiVersion: v1
+data:
+  VSPHERE_USER: "monitoring"
+  VSPHERE_HOST: "192.168.100.23" #rose
+  VSPHERE_IGNORE_SSL: "True"
+  VSPHERE_COLLECT_HOSTS: "True"
+  VSPHERE_COLLECT_DATASTORES: "True"
+  VSPHERE_COLLECT_VMS: "True"
+---
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config-lotus
+apiVersion: v1
+data:
+  VSPHERE_USER: "monitoring"
+  VSPHERE_HOST: "192.168.100.24" #lotus
+  VSPHERE_IGNORE_SSL: "True"
+  VSPHERE_COLLECT_HOSTS: "True"
+  VSPHERE_COLLECT_DATASTORES: "True"
+  VSPHERE_COLLECT_VMS: "True"
+---
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config-violet
+apiVersion: v1
+data:
+  VSPHERE_USER: "monitoring"
+  VSPHERE_HOST: "192.168.100.25" #violet
+  VSPHERE_IGNORE_SSL: "True"
+  VSPHERE_COLLECT_HOSTS: "True"
+  VSPHERE_COLLECT_DATASTORES: "True"
+  VSPHERE_COLLECT_VMS: "True"
+---
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config-mint
+apiVersion: v1
+data:
+  VSPHERE_USER: "monitoring"
+  VSPHERE_HOST: "192.168.100.26" #mint
+  VSPHERE_IGNORE_SSL: "True"
+  VSPHERE_COLLECT_HOSTS: "True"
+  VSPHERE_COLLECT_DATASTORES: "True"
+  VSPHERE_COLLECT_VMS: "True"
+---
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config-plum
+apiVersion: v1
+data:
+  VSPHERE_USER: "monitoring"
+  VSPHERE_HOST: "192.168.100.21" #plum
+  VSPHERE_IGNORE_SSL: "True"
+  VSPHERE_COLLECT_HOSTS: "True"
+  VSPHERE_COLLECT_DATASTORES: "True"
+  VSPHERE_COLLECT_VMS: "True"
+---
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config-lily
+apiVersion: v1
+data:
+  VSPHERE_USER: "monitoring"
+  VSPHERE_HOST: "192.168.100.27" #lily
+  VSPHERE_IGNORE_SSL: "True"
+  VSPHERE_COLLECT_HOSTS: "True"
+  VSPHERE_COLLECT_DATASTORES: "True"
+  VSPHERE_COLLECT_VMS: "True"

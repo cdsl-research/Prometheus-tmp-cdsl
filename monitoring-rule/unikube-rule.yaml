@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unikube-rule
+  namespace: monitoring
+data:
+  container-monitoring-rules.yml: |-
+    groups:
+    - name: unikube-rule
+      rules:
+      - alert: unikube-NodeNotReady
+        expr: kube_node_status_condition{condition="Ready",status="true",node=~"uk-master|uk-worker1|uk-worker2|uk-worker3"} == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kubernetes Node not ready (instance {{ $labels.instance }})
+          description: "Node {{ $labels.node }} has been unready for a long time\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      - alert: unikube-NodeMemoryPressure
+        expr:  kube_node_status_condition{condition="MemoryPressure",status="true",node=~"uk-master|uk-worker1|uk-worker2|uk-worker3"} == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kubernetes Node memory pressure (instance {{ $labels.instance }})
+          description: "Node {{ $labels.node }} has MemoryPressure condition\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      - alert: unikube-NodeDiskPressure
+        expr:  kube_node_status_condition{condition="DiskPressure",status="true",node=~"uk-master|uk-worker1|uk-worker2|uk-worker3"} == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kubernetes Node disk pressure (instance {{ $labels.instance }})
+          description: "Node {{ $labels.node }} has DiskPressure condition\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      - alert: unikube-NodeNetworkUnavailable
+        expr: kube_node_status_condition{condition="NetworkUnavailable",status="true",node=~"uk-master|uk-worker1|uk-worker2|uk-worker3"} == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kubernetes Node network unavailable (instance {{ $labels.instance }})
+          description: "Node {{ $labels.node }} has NetworkUnavailable condition\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      - alert: unikube-NodeOutOfPodCapacity
+        expr: sum by (node) ((kube_pod_status_phase{phase="Running"} == 1) + on(uid) group_left(node) (0 * kube_pod_info{pod_template_hash="",node=~"uk-master|uk-worker1|uk-worker2|uk-worker3"})) / sum by (node) (kube_node_status_allocatable{resource="pods",node=~"uk-master|uk-worker1|uk-worker2|uk-worker3"}) * 100 > 90
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Kubernetes Node out of pod capacity (instance {{ $labels.instance }})
+          description: "Node {{ $labels.node }} is out of pod capacity\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+
+
+
+
+
+
+
+
+
+      - alert: unikube-pod-status-Notready
+        annotations:
+          description: "Pod {{$labels.pod}} not ready"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod {{$labels.pod}} not ready"
+        expr: kube_pod_status_ready{instance=~"^uk.*",condition="false"} > 0
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: unikube-pod-memory-usage
+        annotations:
+          description: "Pod {{$labels.pod}} memory usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod {{$labels.pod}} memory usage high"
+        expr: container_memory_usage_bytes{instance=~"^uk.*"} >= 700000000  # 700MB
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: unikube-pod-cpu-usage
+        annotations:
+          description: "Pod {{$labels.pod}} CPU usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod {{$labels.pod}} CPU usage high"
+        expr: rate(container_cpu_usage_seconds_total{instance=~"^uk.*"}[1m]) >= 0.7
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: unikube-pod-disk-read-count-high
+        annotations:
+          description: "HighDiskReadCountPod {{$labels.pod}}"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod {{$labels.pod}} read count high"
+        expr: rate(container_fs_reads_total{instance=~"^uk.*"}[1m]) >= 100
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: unikube-pod-disk-write
+        annotations:
+          description: "HighDiskWriteCountPod {{$labels.pod}}"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Pod {{$labels.pod}} write count high"
+        expr: rate(container_fs_writes_total{instance=~"^uk.*"}[1m]) >= 100
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: unikube-KubernetesPodNotHealthy
+        expr: sum by (namespace, pod) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed", exported_namespace=~"c0a21115|c0a21021|c0a21037|c0a21099|c0a21151|c0a20131|c0a21155|c0a21151-test|c0a21151-test2|c0a21151-test3|root|c0a21151-test4|c0a21151-test1|ingress-nginx|c0a21151-test5|c0a21013|koyama|c0a21151-test6|hirao|nfs-system|filebeat|c0a21151-test7|c0a21147|cnpg-system|cadvisor|c0a22006|test"}) > 0
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kubernetes Pod not healthy (instance {{ $labels.instance }})
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-running state for longer than 15 minutes.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      - alert: unikube-KubernetesPodCrashLooping
+        expr: increase(kube_pod_container_status_restarts_total{exported_namespace=~"c0a21115|c0a21021|c0a21037|c0a21099|c0a21151|c0a20131|c0a21155|c0a21151-test|c0a21151-test2|c0a21151-test3|root|c0a21151-test4|c0a21151-test1|ingress-nginx|c0a21151-test5|c0a21013|koyama|c0a21151-test6|hirao|nfs-system|filebeat|c0a21151-test7|c0a21147|cnpg-system|cadvisor|c0a22006|test"}[1m]) > 3
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Kubernetes pod crash looping (instance {{ $labels.instance }})
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      - alert: unikube-KubernetesContainerOomKiller
+        expr: (kube_pod_container_status_restarts_total{exported_namespace=~"c0a21115|c0a21021|c0a21037|c0a21099|c0a21151|c0a20131|c0a21155|c0a21151-test|c0a21151-test2|c0a21151-test3|root|c0a21151-test4|c0a21151-test1|ingress-nginx|c0a21151-test5|c0a21013|koyama|c0a21151-test6|hirao|nfs-system|filebeat|c0a21151-test7|c0a21147|cnpg-system|cadvisor|c0a22006|test"} - kube_pod_container_status_restarts_total offset 10m >= 1) and ignoring (reason) min_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[10m]) == 1
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Kubernetes Container oom killer (instance {{ $labels.instance }})
+          description: "Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} has been OOMKilled {{ $value }} times in the last 10 minutes.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      - alert: unikube-KubernetesJobFailed
+        expr: kube_job_status_failed {exported_namespace=~"c0a21115|c0a21021|c0a21037|c0a21099|c0a21151|c0a20131|c0a21155|c0a21151-test|c0a21151-test2|c0a21151-test3|root|c0a21151-test4|c0a21151-test1|ingress-nginx|c0a21151-test5|c0a21013|koyama|c0a21151-test6|hirao|nfs-system|filebeat|c0a21151-test7|c0a21147|cnpg-system|cadvisor|c0a22006|test"} > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Kubernetes Job failed (instance {{ $labels.instance }})
+          description: "Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to complete\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      - alert: unikube-KubernetesPersistentvolumeclaimPending
+        expr: kube_persistentvolumeclaim_status_phase{phase="Pending",exported_namespace=~"c0a21115|c0a21021|c0a21037|c0a21099|c0a21151|c0a20131|c0a21155|c0a21151-test|c0a21151-test2|c0a21151-test3|root|c0a21151-test4|c0a21151-test1|ingress-nginx|c0a21151-test5|c0a21013|koyama|c0a21151-test6|hirao|nfs-system|filebeat|c0a21151-test7|c0a21147|cnpg-system|cadvisor|c0a22006|test"} == 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Kubernetes PersistentVolumeClaim pending (instance {{ $labels.instance }})
+          description: "PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+

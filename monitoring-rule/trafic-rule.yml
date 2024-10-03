@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trafic-rule
+  namespace: monitoring
+data:
+  trafic-monitoring-rules.yml: |-
+    groups:
+    - name: Trafic-Check
+      rules:
+      # ICMPの応答確認
+      - alert: ICMP-Check
+        annotations:
+          description: "Instance {{$labels.instance}}"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Instance {{$labels.instance}} not connect"
+        expr: |-
+          probe_success{job="ICMP-Black-box"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+     #SSHの監視 
+      - alert: SSH-Check
+        annotations:
+          description: "Instance {{$labels.instance}} port not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Instance {{$labels.instance}} port not connect"
+        expr: |-
+          probe_success{job="port-ssh", instance=~".*:22"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      #応答時間
+      #- alert: responce-time-delay
+      #  annotations:
+      #    description: "Instance {{$labels.instance}} responce-time-delay"
+      #    runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #    summary:  "Instance {{$labels.instance}} responce-time-delay"
+      #  expr: |-
+      #    probe_duration_seconds >= 0.5
+      #  for: 3m
+      #  labels:
+      #    severity: warning
+
+      #exporterに対する応答確認
+      #     - alert: exporter-responce-time-delay-time-t1
+      #   annotations:
+      #    description: "job {{$labels.job}} Instance {{$labels.instance}} responce-time-delay"
+      #    runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #    summary:  "exporter-responce-time-delay"
+      #  expr: |-
+      #    scrape_duration_seconds >= 1.0
+      #  for: 3m
+      #  labels:
+      #    severity: warning
+
+      ##- alert: exporter-responce-time-delay-time-t2
+      #  annotations:
+      #    description: "job {{$labels.job}} Instance {{$labels.instance}} responce-time-delay"
+      #    runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #    summary:  "exporter-responce-time-delay"
+      #  expr: |-
+      #    scrape_duration_seconds >= 2.0
+      #  for: 3m
+      #  labels:
+      #    severity: warning
+
+      - alert: responce-time-delay
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} responce-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "exporter-responce-time-delay"
+        expr: |-
+          scrape_duration_seconds{instance!~"192.168.100.158:9100|192.168.100.159:9100"} >= 3.0
+        for: 3m
+        labels:
+          severity: warning
