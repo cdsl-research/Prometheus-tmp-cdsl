@@ -9,7 +9,9 @@ resources:
   - ./kubernetes/exporter/node-exporter-daemonset.yml
   - ./kubernetes/exporter/components.yaml 
   - ./kubernetes/exporter/cadvisor.yaml
-  - ./kubernetes/exporter/black-box.yaml
-  - ./monitoring-rule/container.yml
-  - ./monitoring-rule/node-rule.yaml
-  - ./monitoring-rule/trafic-rule.yml
+    #- ./kubernetes/exporter/black-box.yaml
+    #-   ./monitoring-rule/container.yml
+    #  - ./monitoring-rule/node-rule.yaml
+    #  - ./monitoring-rule/trafic-rule.yml
+    #  - ./monitoring-rule/esxi-rule.yaml
+    #  - ./monitoring-rule/unikube-rule.yaml

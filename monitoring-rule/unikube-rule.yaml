@@ -4,7 +4,7 @@ metadata:
   name: unikube-rule
   namespace: monitoring
 data:
-  container-monitoring-rules.yml: |-
+  unikube-monitoring-rules.yml: |-
     groups:
     - name: unikube-rule
       rules:
@@ -137,7 +137,7 @@ data:
 
       - alert: unikube-KubernetesJobFailed
         expr: kube_job_status_failed {exported_namespace=~"c0a21115|c0a21021|c0a21037|c0a21099|c0a21151|c0a20131|c0a21155|c0a21151-test|c0a21151-test2|c0a21151-test3|root|c0a21151-test4|c0a21151-test1|ingress-nginx|c0a21151-test5|c0a21013|koyama|c0a21151-test6|hirao|nfs-system|filebeat|c0a21151-test7|c0a21147|cnpg-system|cadvisor|c0a22006|test"} > 0
-        for: 0m
+        for: 4m
         labels:
           severity: warning
         annotations:

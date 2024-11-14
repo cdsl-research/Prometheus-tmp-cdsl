@@ -13,7 +13,7 @@ data:
           description: "Pod in {{$labels.exported_namespace}} is down"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Pod in {{$labels.exported_namespace}} is down"
-        expr: kube_pod_container_status_running{exported_namespace=~"dns-dhcp|mysql|jump|stns"} == 0
+        expr: kube_pod_container_status_running{namespace="wordpress"} == 0
         for: 3m
         labels:
           severity: critical
@@ -23,7 +23,7 @@ data:
           description: "Pod {{$labels.pod}} memory usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Pod {{$labels.pod}} memory usage high"
-        expr: container_memory_usage_bytes{namespace=~"dns-dhcp|mysql|jump|stns"} >= 700000000  # 700MB
+        expr: container_memory_usage_bytes{namespace="wordpress"} >= 700000000  # 700MB
         for: 3m
         labels:
           severity: warning
@@ -33,7 +33,7 @@ data:
           description: "Pod {{$labels.pod}} CPU usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Pod {{$labels.pod}} CPU usage high"
-        expr: rate(container_cpu_usage_seconds_total{namespace=~"dns-dhcp|mysql|jump|stns"}[1m]) >= 0.7
+        expr: rate(container_cpu_usage_seconds_total{namespace="wordpress"}[1m]) >= 0.7
         for: 3m
         labels:
           severity: warning
@@ -43,7 +43,7 @@ data:
           description: "HighDiskReadCountPod {{$labels.pod}}"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Pod {{$labels.pod}} read count high"
-        expr: rate(container_fs_reads_total{namespace=~"dns-dhcp|mysql|jump|stns"}[10m]) >= 100
+        expr: rate(container_fs_reads_total{namespace="wordpress"}[10m]) >= 100
         for: 3m
         labels:
           severity: warning
@@ -53,7 +53,7 @@ data:
           description: "HighDiskWriteCountPod {{$labels.pod}}"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Pod {{$labels.pod}} write count high"
-        expr: rate(container_fs_writes_total{namespace=~"dns-dhcp|mysql|jump|stns"}[10m]) >= 100
+        expr: rate(container_fs_writes_total{namespace="wordpress"}[10m]) >= 100
         for: 3m
         labels:
           severity: warning

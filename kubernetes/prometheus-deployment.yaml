@@ -6,7 +6,7 @@ metadata:
   labels:
     app: prometheus
 spec:
-  replicas: 3 
+  replicas: 3
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,8 +23,6 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: core-s2  # core-v2 (IP: 192.168.100.38) に対応
       containers:
       - name: prometheus
         image: quay.io/prometheus/prometheus:v2.53.1
@@ -53,13 +51,18 @@ spec:
       - name: rules-volume
         projected:
           sources:
-            - configMap:
-                name: trafic-rule
-            - configMap:
-                name: node-rule
-            - configMap:
-                name: container-rule
-            - configMap:
-                name: esxi-rule
-            - configMap:
-                name: unikube-rule
+          - configMap:
+              name: trafic-rule
+
+
+
+
+
+#- configMap:
+            #    name: node-rule
+            #- configMap:
+            #    name: container-rule
+                  #- configMap:
+                  #name: esxi-rule
+                  #- configMap:
+                  #name: unikube-rule

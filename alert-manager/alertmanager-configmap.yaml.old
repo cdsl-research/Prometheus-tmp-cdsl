@@ -39,7 +39,7 @@ data:
       - name: slack
         slack_configs:
           - channel: '#alert-experiment-aproach'  # 通知を送信するSlackのチャンネル
-            send_resolved: false
+            send_resolved: true
             text: |-
               {{ range .Alerts }}
                 *アラート:* {{ .Labels.alertname }} - `{{ .Labels.severity }}`
@@ -65,9 +65,7 @@ data:
     route:
       # メインのルーティング設定
       group_by:
-          - alertname  # 'alertname'でグループ化
-            #- instance   # 'instance'でもグループ化
-          #- severity
+        - job
       group_interval: 5m
       group_wait: 5m
       repeat_interval: 12h
@@ -76,10 +74,9 @@ data:
         - match:
             alertname: DeadMansSwitch
           receiver: "null"
-        - receiver: slack
-          continue: true  # Slackへ通知後も続行する
-        - receiver: flask
-          continue: true  # Flaskへ通知後も続行する
+        - receiver: slack  # Slackに通知を送信
+          #continue: true   # 続行して次のレシーバにも通知
+        - receiver: flask  # Flaskにも同じアラートを送信
 
     templates:
       - /etc/alertmanager/config/*.tmpl  # テンプレートファイルのパス

@@ -13,7 +13,7 @@ data:
           description: "Node {{$labels.node_kubernetes_io_instance_type}} down"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Node {{$labels.node_kubernetes_io_instance_type}} down"
-        expr: up{node_kubernetes_io_instance_type="k3s"} == 0
+        expr: up{node=~"out.*"} == 0
         for: 3m
         labels:
           severity: critical
@@ -53,7 +53,7 @@ data:
           description: "Node {{$labels.node_kubernetes_io_instance_type}} disk read time delay"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Node {{$labels.node_kubernetes_io_instance_type}} disk read time delay"
-        expr: rate(node_disk_reads_completed_total[1m]) >= 500
+        expr: rate(node_disk_reads_completed_total[1m]) >= 100
         for: 3m
         labels:
           severity: "warning"
@@ -67,4 +67,26 @@ data:
         for: 3m
         labels:
           severity: "warning"
+
+      - alert: nfs-notconection-mysql
+        annotations:
+          description: "nfs {{$labels.node_kubernetes_io_instance_type}} "
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "nfs-notconection-mysql"
+        expr: nfs_up{mount_path="/home/cdsl/mysql"} == 0
+        for: 3m
+        labels:
+          severity: "warning"
+      
+
+      - alert: nfs-notconection-wordpress
+        annotations:
+          description: "nfs {{$labels.node_kubernetes_io_instance_type}} "
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "nfs-notconection-wordpress"
+        expr: nfs_up{mount_path="/home/cdsl/wordpress"} == 0
+        for: 3m
+        labels:
+          severity: "warning"
+
 

@@ -14,7 +14,7 @@ data:
           runbook_url: https://{{$labels.host_name}}/ui/#/login
           summary:  "VM：`{{$labels.vm_name}}` in `{{$labels.host_name}}` is down"
         expr: vmware_vm_power_state{instance=~"192.168.100.35:3270.*"} < 1
-        for: 5m
+        for: 24h
         labels:
           severity: warning
 

@@ -1,10 +1,8 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: node-exporter
+  name: prometheus-node-exporter
   namespace: monitoring
-  labels:
-    app: node-exporter
 spec:
   selector:
     matchLabels:
@@ -13,51 +11,43 @@ spec:
     metadata:
       labels:
         app: node-exporter
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9100"
     spec:
-      hostPID: true
-      hostIPC: true
-      hostNetwork: true
       containers:
       - name: node-exporter
-        image: prom/node-exporter:v1.8.2
-        ports:
-        - containerPort: 9100
-          protocol: TCP
-        resources:
-          requests:
-            cpu: 150m
-        securityContext:
-          privileged: true
+        image: quay.io/prometheus/node-exporter:v1.2.2
         args:
-        - --path.procfs
-        - /host/proc
-        - --path.sysfs
-        - /host/sys
-        - --collector.filesystem.ignored-mount-points
-        - '"^/(sys|proc|dev|host|etc)($|/)"'
+        - --path.rootfs=/
+        - --collector.filesystem  # ファイルシステムのコレクタを有効化
+        - --collector.filesystem.mount-points-exclude="^/(var/lib/docker|overlay|containers)"  # こちらを使用
+        - --collector.textfile.directory=/var/lib/node_exporter/textfile_collector
+        ports:
+        - name: http-metrics
+          containerPort: 9100
+        resources:  # リソースの指定
+          requests:
+            memory: "50Mi"
+            cpu: "100m"
+          limits:
+            memory: "200Mi"
+            cpu: "500m"
         volumeMounts:
-        - name: dev
-          mountPath: /host/dev
         - name: proc
           mountPath: /host/proc
+          readOnly: true
         - name: sys
           mountPath: /host/sys
+          readOnly: true
         - name: rootfs
-          mountPath: /rootfs
+          mountPath: /mnt
+          readOnly: true
       volumes:
       - name: proc
         hostPath:
           path: /proc
-      - name: dev
-        hostPath:
-          path: /dev
       - name: sys
         hostPath:
           path: /sys
       - name: rootfs
         hostPath:
-          path: /
+          path: /mnt
 

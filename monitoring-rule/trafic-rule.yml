@@ -73,7 +73,59 @@ data:
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "exporter-responce-time-delay"
         expr: |-
-          scrape_duration_seconds{instance!~"192.168.100.158:9100|192.168.100.159:9100"} >= 3.0
+          scrape_duration_seconds{instance!~"192.168.100.154:9100",instance!~"192.168.100.135"} >= 3
         for: 3m
         labels:
           severity: warning
+            #ここからwordpressの監視
+
+      - alert: wordpress-not-connection-home
+        annotations:
+          description: "wordpress-not-connection-home"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: wordpress-not-connection-home
+        expr: |-
+          probe_success{job="wordpress-http"} == 0
+        for: 3m
+        labels:
+          severity: warning
+      
+
+
+
+      - alert: wordpress-responcetime-delay
+        annotations:
+          description: "wordpress-responce-time-delay-t3"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: wordpress-responce-time-delay
+        expr: |-
+          probe_duration_seconds{job="wordpress-http"} >= 3
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: wordpress-responcetime-delay
+        annotations:
+          description: "wordpress-responce-time-delay-t1"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: wordpress-responce-time-delay
+        expr: |-
+          probe_duration_seconds{job="wordpress-http"} >= 1
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: wordpress-status-code
+        annotations:
+          description: "wordpress-status-code"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: wordpress-status-code
+        expr: |-
+          probe_http_status_code{job="wordpress-http"} >=400
+        for: 3m
+        labels:
+          severity: warning
+
+
+
+

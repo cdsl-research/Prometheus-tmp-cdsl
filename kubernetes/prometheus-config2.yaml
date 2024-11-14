@@ -13,12 +13,22 @@ data:
       alertmanagers:
         - static_configs:
             - targets:
-                - 192.168.100.35:32500
+                - monitoring-master-ml:32500
 
     rule_files:
       - "/etc/prometheus/rules/*.yml"
 
     scrape_configs:
+      - job_name: 'nfs-node-exporter'
+        scrape_interval: 1m
+        static_configs:
+          - targets: ['outside-nfs7:9100']
+
+      - job_name: 'nfs-exporter'
+        scrape_interval: 1m
+        static_configs:
+          - targets: ['outside-prometheus-ml4:30000']
+
       - job_name: 'archive-node-exporter'
         scrape_interval: 1m
         static_configs:
@@ -58,6 +68,24 @@ data:
         scrape_interval: 1m
         static_configs:
           - targets: ['192.168.100.35:32706']
+
+
+      - job_name: "wordpress-http"
+        scrape_interval: 5m
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+        static_configs:
+          - targets:
+            - http://192.168.100.205/
+            - http://192.168.100.205/post/
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: 192.168.100.35:30000
  
       - job_name: 'port-ssh'
         scrape_interval: 1m
@@ -148,6 +176,7 @@ data:
               - 192.168.100.36
               - 192.168.100.37
               - 192.168.100.38
+              - 192.168.100.135
         relabel_configs:
           - source_labels: [__address__]
             target_label: __param_target
@@ -247,6 +276,7 @@ data:
             action: replace
             target_label: pod
 
-    remote_read:
-      - url: http://192.168.100.241:30900/api/v1/read
+              #remote_read:
+      #- url: http://192.168.100.205:30090/api/v1/read
+        #- url: http://192.168.100.241:30900/api/v1/read
 
