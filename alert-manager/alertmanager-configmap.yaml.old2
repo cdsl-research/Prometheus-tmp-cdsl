@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager
+data:
+  config.yml: |-
+    global:
+      resolve_timeout: 1m
+      slack_api_url: https://hooks.slack.com/services/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
+
+    inhibit_rules:
+      - equal:
+          - namespace
+          - alertname
+        source_matchers:
+          - severity = critical
+        target_matchers:
+          - severity =~ warning|info|attention
+
+    receivers:
+      - name: "null"
+      - name: slack-instance-specific
+        slack_configs:
+          - channel: '#monitoring-alert-v2'
+            send_resolved: true
+            text: |
+              *Grouped Alerts for Instance:* {{ .GroupLabels.instance }}
+              {{ range .Alerts }}
+              ---
+              *Alert:* {{ .Labels.alertname }}
+              *Description:* {{ .Annotations.description }}
+              *Status:* {{ .Status }}
+              {{ end }}
+      - name: slack-other
+        slack_configs:
+          - channel: '#other-alerts'
+            send_resolved: true
+            text: |
+              *Grouped Alerts:*
+              {{ range .Alerts }}
+              ---
+              *Alert:* {{ .Labels.alertname }}
+              *Instance:* {{ .Labels.instance }}
+              *Status:* {{ .Status }}
+              {{ end }}
+
+    route:
+      group_interval: 3m  # グループ化の間隔
+      group_wait: 30s     # グループ化を開始するまでの待機時間
+      group_by:
+        - instance  # インスタンス単位でグループ化
+      repeat_interval: 12h
+      receiver: "slack-other"
+
+      routes:
+        - matchers:
+          receiver: "slack-instance-specific"
+          group_by:
+          group_interval: 3m
+          group_wait: 30s
+          continue: true
+        - receiver: "slack-other"
+          continue: false
+
+

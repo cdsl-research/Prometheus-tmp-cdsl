@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iris-trafic-rule
+  namespace: monitoring
+data:
+  trafic-monitoring-rules.yml: |-
+    groups:
+    - name: Trafic-Check
+      rules:
+      ### ICMP
+      - alert: Iris-ICMP-Check
+        annotations:
+          description: "Instance {{$labels.instance}}"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ICMP not connect"
+        expr: |-
+          probe_success{job="ICMP-Black-box-Iris"} == 0
+        for: 5m
+        labels:
+          severity: critical
+
+      - alert: Iris-Monitoring-ICMP-Responce-time-1.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ICMP response time delay"
+        expr: |-
+          probe_duration_seconds{job="ICMP-Black-box-Iris"} >= 1.0
+        for: 5m
+        labels:
+          severity: warning
+
+      - alert: Iris-Monitoring-ICMP-Responce-time-3.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ICMP response time delay"
+        expr: |-
+          probe_duration_seconds{job="ICMP-Black-box-Iris"} >= 3.0
+        for: 5m
+        labels:
+          severity: warning
+     
+      ### SSH
+      - alert: harvest-SSH-Check
+        annotations:
+          description: "Instance {{$labels.instance}} port not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "22 port not connect"
+        expr: |-
+          probe_success{job="harvest-port-ssh"} == 0
+        for: 5m
+        labels:
+          severity: critical
+
+      - alert: Monitoring-SSH-Responce-time-1.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "SSH response time delay"
+        expr: |-
+          probe_duration_seconds{job="harvest-port-ssh"} > 1.0
+        for: 5m
+        labels:
+          severity: warning
+
+      - alert: Monitoring-SSH-Responce-time-3.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "SSH response time delay"
+        expr: |-
+          probe_duration_seconds{job="harvest-port-ssh"} > 3.0
+        for: 3m
+        labels:
+          severity: warning
+
+      ### DNS
+      - alert: DNS-lookup-time-delay-1.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "DNS response time delay"
+        expr: |-
+          probe_dns_lookup_time_seconds >= 1.0
+        for: 5m
+        labels:
+          severity: warning
+
+      - alert: DNS-lookup-time-delay-3.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "DNS response time delay"
+        expr: |-
+          probe_dns_lookup_time_seconds >= 3.0
+        for: 5m
+        labels:
+          severity: warning
+
+      ### HTTP
+      - alert: Monitoring-HTTP-Page
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} Page Not Connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "Page not reachable"
+        expr: |-
+          probe_success{instance="192.168.201.2", job="Iris-ESXi-http-check"} == 0
+        for: 5m
+        labels:
+          severity: warning
+
+      - alert: Monitoring-HTTP-Page-StatusCode
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} Page Status Code high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "Page Status Code high"
+        expr: |-
+          probe_http_status_code{instance="192.168.201.2", job="Iris-ESXi-http-check"}  >= 400
+        for: 5m
+        labels:
+          severity: warning
+
+      - alert: Monitoring-HTTP-Responce-time-1.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "HTTP response time delay"
+        expr: |-
+          probe_duration_seconds{instance="192.168.201.2", job="Iris-ESXi-http-check"} >= 1.0
+        for: 5m
+        labels:
+          severity: warning
+      
+      - alert: Monitoring-HTTP-Responce-time-3.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "HTTP response time delay"
+        expr: |-
+          probe_duration_seconds{instance="192.168.201.2", job="Iris-ESXi-http-check"} >= 3.0
+        for: 5m
+        labels:
+          severity: critical

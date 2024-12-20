@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager
+data:
+  config.yml: |-
+    global:
+      resolve_timeout: 1m
+      slack_api_url: 'https://hooks.slack.com/services/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'
+
+    route:
+      receiver: 'slack-alert'
+      group_interval: 3m  # グループ化の間隔
+      group_wait: 30s     # グループ化を開始するまでの待機時間
+      group_by: 
+        - instance
+        - alertname
+      repeat_interval: 12h
+
+    receivers:
+    - name: 'slack-alert'
+      slack_configs: 
+      - channel: '#monitoring-alert-v2'
+        send_resolved: true
+        text: |
+          {{ range .Alerts }}
+          *概要:* {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}概要なし{{ end }}
+          *アラート:* {{ .Labels.alertname }} 
+          *ランブック:* {{ if .Annotations.runbook_url }}{{ .Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
+          *重大度:* {{ .Labels.severity }}
+          *詳細情報:*
+            • *alertname:* {{ .Labels.alertname }}
+            • *instance:* {{ if .Labels.instance }}{{ .Labels.instance }}{{ else }}N/A{{ end }}
+            • *job:* {{ if .Labels.job }}{{ .Labels.job }}{{ else }}N/A{{ end }}
+            • *description:* {{ if .Annotations.description }}{{ .Annotations.description }}{{ else }}説明なし{{ end }}
+            ---
+          {{ end }}
+          title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 監視イベント通知'
+
+        
+
+

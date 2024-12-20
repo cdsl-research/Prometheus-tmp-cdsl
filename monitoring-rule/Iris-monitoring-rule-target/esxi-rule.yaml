@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iris-esxi-rule
+  namespace: monitoring
+data:
+  esxi-monitoring-rules.yml: |-
+    groups:
+    - name: Iris-esxi-rule # ESXi monitoring rules
+      rules:
+      ### Connection Rules
+      - alert: HostConnectionUnavailable
+        expr: vmware_host_connection_state{instance="monitoring-master-ml:32707"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          description: "`{{$labels.host_name}}` Host Connection"
+          runbook_url: https://192.168.201.2/
+          summary:  "`{{$labels.host_name}}` Host Connection"
+
+      - alert: DataStoreConnectionUnavailable
+        expr: vmware_datastore_accessible{instance="monitoring-master-ml:32707"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          description: "`Host: {{$labels.host_name}}` Ds_name: `{{$labels.ds_name}}` Not Connection"
+          runbook_url: https://192.168.201.2/
+          summary:  "DataStore Not Connection"
+
+      ### CPU Rules
+      - alert: HostCPUUsageHighWarning
+        expr: vmware_host_cpu_usage{instance="monitoring-master-ml:32707"}/vmware_host_cpu_max{instance="monitoring-master-ml:32705"} * 100 > 70
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` CPU Usage High"
+          runbook_url: https://192.168.201.2/
+          summary:  "CPU Usage High"
+      
+      - alert: HostCPUUsageHighCritical
+        expr: vmware_host_cpu_usage{instance="monitoring-master-ml:32707"}/vmware_host_cpu_max{instance="monitoring-master-ml:32707"} * 100 > 80
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` CPU Usage High"
+          runbook_url: https://192.168.201.2/
+          summary:  "CPU Usage High"
+
+      ### Memory Rules
+      - alert: HostMemoryUsageHighWarning
+        expr: vmware_host_memory_usage{host_name="plum",instance="monitoring-master-ml:32707"}/vmware_host_memory_max{host_name="plum",instance="monitoring-master-ml:32707"} * 100 > 70
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` Memory Usage High"
+          runbook_url: https://192.168.201.2/
+          summary:  "Memory Usage High"
+
+      - alert: HostMemoryUsageHighCritical
+        expr: vmware_host_memory_usage{host_name="iris",instance="monitoring-master-ml:32707"}/vmware_host_memory_max{host_name="iris",instance="monitoring-master-ml:32707"} * 100 > 80
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` Memory Usage High"
+          runbook_url: https://192.168.201.2/
+          summary:  "Memory Usage High"
+
+      ### Disk Rules
+      - alert: DataStoreDiskUsageHighWarning
+        expr: (vmware_datastore_capacity_size{instance="monitoring-master-ml:32707"} - vmware_datastore_freespace_size{instance="monitoring-master-ml:32707"}) / vmware_datastore_capacity_size{instance="monitoring-master-ml:32707"} * 100 > 70
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}`, Ds_name: `{{$labels.ds_name}}` Disk Usage High"
+          runbook_url: https://192.168.201.2/
+          summary:  "Disk Usage High"
+
+      - alert: DataStoreDiskUsageHighCritical
+        expr: (vmware_datastore_capacity_size{instance="monitoring-master-ml:32707"} - vmware_datastore_freespace_size{instance="monitoring-master-ml:32707"}) / vmware_datastore_capacity_size{instance="monitoring-master-ml:32707"} * 100 > 80
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}`, Ds_name: `{{$labels.ds_name}}` Disk Usage High"
+          runbook_url: https://192.168.201.2/
+          summary:  "Disk Usage High"
+
+      ### Network Rules
+      - alert: NetworkPacketLossReceive
+        expr: vmware_host_net_droppedRx_summation{host_name="iris"} / vmware_host_net_bytesRx_average{host_name="iris"} > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` Packet Loss Error"
+          runbook_url: https://192.168.201.2/
+          summary:  "Packet Loss Error"
+
+      - alert: NetworkPacketLossTransmit
+        expr: vmware_host_net_droppedTx_summation{host_name="iris"} / vmware_host_net_bytesTx_average{host_name="iris"} > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` Packet Loss Error"
+          runbook_url: https://192.168.201.2/
+          summary:  "Packet Loss Error"

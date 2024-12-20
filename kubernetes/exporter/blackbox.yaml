@@ -1,0 +1,154 @@
+---
+# Source: prometheus-blackbox-exporter/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: blackbox-prometheus-blackbox-exporter
+  namespace: monitoring
+  labels:
+    helm.sh/chart: prometheus-blackbox-exporter-8.6.1
+    app.kubernetes.io/name: prometheus-blackbox-exporter
+    app.kubernetes.io/instance: blackbox
+    app.kubernetes.io/version: "v0.24.0"
+    app.kubernetes.io/managed-by: Helm
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blackbox-prometheus-blackbox-exporter
+  namespace: monitoring
+  labels:
+    helm.sh/chart: prometheus-blackbox-exporter-8.6.1
+    app.kubernetes.io/name: prometheus-blackbox-exporter
+    app.kubernetes.io/instance: blackbox
+    app.kubernetes.io/version: "v0.24.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  blackbox.yaml: |
+    modules:
+      ssh_banner:
+        prober: tcp
+        tcp:
+          query_response:
+            - expect: "^SSH-2.0-"
+      http_2xx:
+        prober: http
+        timeout: 5s
+        http:
+          follow_redirects: true
+          preferred_ip_protocol: ip4
+          valid_http_versions:
+          - HTTP/1.1
+          - HTTP/2.0
+          tls_config:
+            insecure_skip_verify: true  # 証明書エラーを無視する設定
+      icmp:
+        prober: icmp
+      icmp_ipv4:
+        icmp:
+          preferred_ip_protocol: ip4
+      https_6443:
+        prober: http
+        timeout: 10s
+        http:
+          preferred_ip_protocol: ip4
+          method: GET
+          valid_http_versions:
+          - HTTP/1.1
+          - HTTP/2.0
+          fail_if_ssl: false
+          fail_if_not_ssl: true
+          tls_config:
+            insecure_skip_verify: true  # 証明書エラーを無視する設定
+
+---
+# Source: prometheus-blackbox-exporter/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: blackbox-prometheus-blackbox-exporter
+  namespace: monitoring
+  labels:
+    helm.sh/chart: prometheus-blackbox-exporter-8.6.1
+    app.kubernetes.io/name: prometheus-blackbox-exporter
+    app.kubernetes.io/instance: blackbox
+    app.kubernetes.io/version: "v0.24.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: NodePort
+  ports:
+    - port: 30000
+      targetPort: http
+      protocol: TCP
+      name: http
+      nodePort: 30000
+  selector:
+    app.kubernetes.io/name: prometheus-blackbox-exporter
+    app.kubernetes.io/instance: blackbox
+
+---
+# Source: prometheus-blackbox-exporter/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blackbox-prometheus-blackbox-exporter
+  namespace: monitoring
+  labels:
+    helm.sh/chart: prometheus-blackbox-exporter-8.6.1
+    app.kubernetes.io/name: prometheus-blackbox-exporter
+    app.kubernetes.io/instance: blackbox
+    app.kubernetes.io/version: "v0.24.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus-blackbox-exporter
+      app.kubernetes.io/instance: blackbox
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: prometheus-blackbox-exporter-8.6.1
+        app.kubernetes.io/name: prometheus-blackbox-exporter
+        app.kubernetes.io/instance: blackbox
+      annotations:
+        checksum/config: a1d33b9cf721f91f17af6b36b211578e6d906746fef30b277b5a136ddc288a38
+    spec:
+      serviceAccountName: blackbox-prometheus-blackbox-exporter
+      containers:
+      - name: blackbox-exporter
+        image: quay.io/prometheus/blackbox-exporter:v0.24.0
+        imagePullPolicy: IfNotPresent
+        args:
+        - "--config.file=/config/blackbox.yaml"
+        ports:
+        - containerPort: 9115
+          name: http
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: http
+        readinessProbe:
+          httpGet:
+            path: /-/healthy
+            port: http
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: [ALL]
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+        volumeMounts:
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: config
+        configMap:
+          name: blackbox-prometheus-blackbox-exporter

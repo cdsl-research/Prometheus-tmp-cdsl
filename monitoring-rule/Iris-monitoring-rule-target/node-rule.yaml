@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iris-harvest-node-rule
+  namespace: monitoring
+data:
+  node-monitoring-rules.yml: |-
+    groups:
+      - name: harvest-Node-check
+        rules:
+          ### UP Check
+          - alert: harvest-Node-up-check
+            annotations:
+              description: "Node {{ $labels.instance }} is down"
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+              summary: "Node down"
+            expr: up{job="harvest-node-exporter"} == 0
+            for: 5m
+            labels:
+              severity: critical
+
+          ### CPU Usage
+          - alert: harvest-node-cpu-high-v1
+            annotations:
+              description: "Node {{$labels.node_kubernetes_io_instance_type}} CPU usage high"
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+              summary: "Node {{$labels.node_kubernetes_io_instance_type}} CPU usage high"
+            expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle", job="harvest-node-exporter"}[2m])) * 100) >= 80
+            for: 5m
+            labels:
+              severity: "warning"
+
+          - alert: harvest-node-cpu-high-v2
+            annotations:
+              description: "Node {{$labels.node_kubernetes_io_instance_type}} CPU usage high"
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+              summary: "Node {{$labels.node_kubernetes_io_instance_type}} CPU usage high"
+            expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle", job="harvest-node-exporter"}[2m])) * 100) >= 90
+            for: 5m
+            labels:
+              severity: "warning"
+
+          ### Memory Usage
+          - alert: harvest-node-memory-high-v1
+            annotations:
+              description: "Node {{$labels.node_kubernetes_io_instance_type}} memory usage high"
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+              summary: "Node {{$labels.node_kubernetes_io_instance_type}} memory usage high"
+            expr: (100 - node_memory_MemAvailable_bytes{job="harvest-node-exporter"} / node_memory_MemTotal_bytes{job="harvest-node-exporter"} * 100) >= 80
+            for: 5m
+            labels:
+              severity: "warning"
+
+          - alert: harvest-node-memory-high-v2
+            annotations:
+              description: "Node {{$labels.node_kubernetes_io_instance_type}} memory usage high"
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+              summary: "Node {{$labels.node_kubernetes_io_instance_type}} memory usage high"
+            expr: (100 - node_memory_MemAvailable_bytes{job="harvest-node-exporter"} / node_memory_MemTotal_bytes{job="harvest-node-exporter"} * 100) >= 90
+            for: 5m
+            labels:
+              severity: "warning"
+
+          ### Disk Usage
+          - alert: harvest-node-disk-usage-high-v1
+            annotations:
+              description: "Node {{$labels.node_kubernetes_io_instance_type}} disk usage high"
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+              summary: "Node {{$labels.node_kubernetes_io_instance_type}} disk usage high"
+            expr: (1 - (node_filesystem_avail_bytes{device="/dev/mapper/ubuntu--vg-ubuntu--lv", job="harvest-node-exporter"} / node_filesystem_size_bytes{device="/dev/mapper/ubuntu--vg-ubuntu--lv", job="harvest-node-exporter"})) * 100 >= 80
+            for: 5m
+            labels:
+              severity: "warning"
+
+          - alert: harvest-node-disk-usage-high-v2
+            annotations:
+              description: "Node {{$labels.node_kubernetes_io_instance_type}} disk usage high"
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+              summary: "Node {{$labels.node_kubernetes_io_instance_type}} disk usage high"
+            expr: (1 - (node_filesystem_avail_bytes{device="/dev/mapper/ubuntu--vg-ubuntu--lv", job="harvest-node-exporter"} / node_filesystem_size_bytes{device="/dev/mapper/ubuntu--vg-ubuntu--lv", job="harvest-node-exporter"})) * 100 >= 90
+            for: 5m
+            labels:
+              severity: "warning"
