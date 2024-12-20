@@ -6,7 +6,7 @@ metadata:
   labels:
     app: prometheus
 spec:
-  replicas: 3
+  replicas: 1 
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -52,17 +52,14 @@ spec:
         projected:
           sources:
           - configMap:
-              name: trafic-rule
-
-
-
-
-
-#- configMap:
-            #    name: node-rule
-            #- configMap:
-            #    name: container-rule
-                  #- configMap:
-                  #name: esxi-rule
-                  #- configMap:
-                  #name: unikube-rule
+              name: iris-trafic-rule
+          - configMap:
+              name: iris-esxi-rule
+          - configMap:
+              name: iris-harvest-node-rule
+          - configMap:
+              name: test-alert-rule
+          # - configMap:
+          #     name: esxi-rule
+          # - configMap:
+          #     name: unikube-rule
