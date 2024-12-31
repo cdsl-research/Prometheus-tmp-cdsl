@@ -39,8 +39,8 @@ spec:
           mountPath: /etc/prometheus
         - name: data
           mountPath: /prometheus
-        - name: rules-volume
-          mountPath: /etc/prometheus/rules
+        # - name: rules-volume
+        #   mountPath: /etc/prometheus/rules
       restartPolicy: Always
       volumes:
       - name: config-volume
@@ -48,17 +48,17 @@ spec:
           name: prometheus-config
       - name: data
         emptyDir: {}
-      - name: rules-volume
-        projected:
-          sources:
-          - configMap:
-              name: iris-trafic-rule
-          - configMap:
-              name: iris-esxi-rule
-          - configMap:
-              name: iris-harvest-node-rule
-          - configMap:
-              name: test-alert-rule
+      # - name: rules-volume
+      #   projected:
+      #     sources:
+      #     - configMap:
+      #         name: iris-trafic-rule
+      #     - configMap:
+      #         name: iris-esxi-rule
+      #     - configMap:
+      #         name: iris-harvest-node-rule
+      #     - configMap:
+      #         name: test-alert-rule
           # - configMap:
           #     name: esxi-rule
           # - configMap:
