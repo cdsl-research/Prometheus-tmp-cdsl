@@ -1,0 +1,202 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: esxi-rule
+  namespace: monitoring
+data:
+  esxi-monitoring-rules.yml: |-
+    groups:
+    - name: ESXi-Check
+      rules:
+      ### ICMP
+      - alert: ESXi-ICMP-Check
+        annotations:
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi ICMP not connect"
+        expr: |-
+          probe_success{job="ICMP-ESXi-Host"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      - alert: ESXi-Monitoring-ICMP-Responce-time-1.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ICMP response time delay"
+        expr: |-
+          probe_duration_seconds{job="ICMP-ESXi-Host"} >= 1.0
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: ESXi-Monitoring-ICMP-Responce-time-3.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ICMP response time delay"
+        expr: |-
+          probe_duration_seconds{job="ICMP-ESXi-Host"} >= 3.0
+        for: 3m
+        labels:
+          severity: warning
+
+      
+      ### HTTP
+      - alert: ESXi-HTTP-Check
+        annotations:
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi HTTP not connect"
+        expr: |-
+          probe_success{job="HTTP-ESXi"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      - alert: ESXi-Monitoring-HTTP-Responce-time-1.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "HTTP response time delay"
+        expr: |-
+          probe_duration_seconds{job="HTTP-ESXi"} >= 1.0
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: ESXi-Monitoring-HTTP-Responce-time-3.0
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "HTTP response time delay"
+        expr: |-
+          probe_duration_seconds{job="HTTP-ESXi"} >= 3.0
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: ESXi-Monitoring-HTTP-StatusCode-Err
+        annotations:
+          description: "job {{$labels.job}} Instance {{$labels.instance}} StatusCode Err"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "StatusCode Err"
+        expr: |-
+          probe_http_status_code{job="HTTP-ESXi"} >= 400
+        for: 3m
+        labels:
+          severity: warning
+
+      ### Connection Rules
+      - alert: HostConnectionUnavailable
+        annotations:
+          description: "`{{$labels.host_name}}` Host Connection"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "`{{$labels.host_name}}` Host Connection"
+        expr: |-
+          vmware_host_connection_state{job="ESXI_exporter"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      - alert: DataStoreConnectionUnavailable
+        annotations:
+          description: "`Host: {{$labels.instance}}` Ds_name: `{{$labels.ds_name}}` Not Connection"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "DataStore Not Connection"
+        expr: |-
+          vmware_datastore_accessible{job="ESXI_exporter", ds_name!="StoreNAS-Public"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      ### CPU Rules
+      - alert: HostCPUUsageHighWarning
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` CPU Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "CPU Usage High"
+        expr: |-
+          vmware_host_cpu_usage{job="ESXI_exporter"}/vmware_host_cpu_max{job="ESXI_exporter"} * 100 >= 70
+        for: 3m
+        labels:
+          severity: warning
+      
+      - alert: HostCPUUsageHighCritical
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` CPU Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "CPU Usage High"
+        expr: |-
+          vmware_host_cpu_usage{job="ESXI_exporter"}/vmware_host_cpu_max{job="ESXI_exporter"} * 100 >= 80
+        for: 3m
+        labels:
+          severity: critical
+
+      ### Memory Rules
+      - alert: HostMemoryUsageHighWarning
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` Memory Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Memory Usage High"
+        expr: |-
+          vmware_host_memory_usage{job="ESXI_exporter"}/vmware_host_memory_max{job="ESXI_exporter"} * 100 >= 70
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: HostMemoryUsageHighCritical
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` Memory Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Memory Usage High"
+        expr: |-
+          vmware_host_memory_usage{job="ESXI_exporter"}/vmware_host_memory_max{job="ESXI_exporter"} * 100 >= 80
+        for: 3m
+        labels:
+          severity: critical
+
+      ### Disk Rules
+      - alert: DataStoreDiskUsageHigh
+        annotations:
+          description: "Host Name: `{{$labels.instance}}`, Ds_name: `{{$labels.ds_name}}` Disk Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Disk Usage High"
+        expr: (vmware_datastore_capacity_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"} - vmware_datastore_freespace_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"}) / vmware_datastore_capacity_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"} * 100 >= 70
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: DataStoreDiskUsageHighCritical
+        annotations:
+          description: "Host Name: `{{$labels.instance}}`, Ds_name: `{{$labels.ds_name}}` Disk Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Disk Usage High"
+        expr: (vmware_datastore_capacity_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"} - vmware_datastore_freespace_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"}) / vmware_datastore_capacity_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"} * 100 >= 80
+        for: 3m
+        labels:
+          severity: critical
+
+      ### Network Rules
+      - alert: NetworkPacketLossReceive
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` Packet Loss Error"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Packet Loss Error"
+        expr: |-
+          vmware_host_net_droppedRx_summation{job="ESXI_exporter"} / vmware_host_net_bytesRx_average{job="ESXI_exporter"} > 0
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: NetworkPacketLossTransmit
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` Packet Loss Error"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Packet Loss Error"
+        expr: |-
+          vmware_host_net_droppedTx_summation{job="ESXI_exporter"} / vmware_host_net_bytesTx_average{job="ESXI_exporter"} > 0
+        for: 3m
+        labels:
+          severity: warning
