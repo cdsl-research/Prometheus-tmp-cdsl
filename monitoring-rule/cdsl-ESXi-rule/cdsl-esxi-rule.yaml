@@ -163,7 +163,7 @@ data:
           description: "Host Name: `{{$labels.instance}}`, Ds_name: `{{$labels.ds_name}}` Disk Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Disk Usage High"
-        expr: (vmware_datastore_capacity_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"} - vmware_datastore_freespace_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"}) / vmware_datastore_capacity_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"} * 100 >= 70
+        expr: (vmware_datastore_capacity_size{ds_name!="StoreNAS-Public",job="ESXI_exporter"} - vmware_datastore_freespace_size{ds_name!="StoreNAS-Public",job="ESXI_exporter"}) / vmware_datastore_capacity_size{ds_name!="StoreNAS-Public",job="ESXI_exporter"} * 100 >= 80
         for: 3m
         labels:
           severity: warning
@@ -173,7 +173,7 @@ data:
           description: "Host Name: `{{$labels.instance}}`, Ds_name: `{{$labels.ds_name}}` Disk Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Disk Usage High"
-        expr: (vmware_datastore_capacity_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"} - vmware_datastore_freespace_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"}) / vmware_datastore_capacity_size{job="ESXI_exporter",ds_name!="StoreNAS-Public"} * 100 >= 80
+        expr: (vmware_datastore_capacity_size{ds_name!="StoreNAS-Public",job="ESXI_exporter"} - vmware_datastore_freespace_size{ds_name!="StoreNAS-Public",job="ESXI_exporter"}) / vmware_datastore_capacity_size{ds_name!="StoreNAS-Public",job="ESXI_exporter"} * 100 >= 90
         for: 3m
         labels:
           severity: critical
@@ -200,3 +200,6 @@ data:
         for: 3m
         labels:
           severity: warning
+
+
+    

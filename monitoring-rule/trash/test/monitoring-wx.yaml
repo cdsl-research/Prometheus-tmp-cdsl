@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-ex-rule
+  namespace: monitoring
+data:
+  monitoring-ex-rules.yml: |-
+    ### Trafic
+    groups:
+    - name: monitoring-ex-Check
+      rules:
+      ### ICMP
+      - alert: monitoring-ex-Check
+        annotations:
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "monitoring-ex not connect"
+        expr: |-
+          up{job="test-monitoring-target"} == 0
+        for: 3m
+        labels:
+          severity: critical

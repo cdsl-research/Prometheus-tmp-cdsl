@@ -6,7 +6,7 @@ data:
   config.yml: |-
     global:
       resolve_timeout: 1m
-      slack_api_url: https://hooks.slack.com/services/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
+      slack_api_url: https://hooks.slack.com/services/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
 
     inhibit_rules:
       - equal:
@@ -16,50 +16,72 @@ data:
           - severity = critical
         target_matchers:
           - severity =~ warning|info|attention
+      - equal:
+          - namespace
+          - alertname
+        source_matchers:
+          - severity = warning
+        target_matchers:
+          - severity = info
+      - equal:
+          - namespace
+        source_matchers:
+          - alertname = InfoInhibitor
+        target_matchers:
+          - severity = info
+      - target_matchers:
+          - alertname = InfoInhibitor
 
     receivers:
       - name: "null"
-      - name: slack-instance-specific
+      - name: slack
         slack_configs:
-          - channel: '#monitoring-alert-v2'
+          - channel: '#monitoring-cdsl-alert'  # 通知を送信するSlackのチャンネル
             send_resolved: true
-            text: |
-              *Grouped Alerts for Instance:* {{ .GroupLabels.instance }}
+            text: |-
               {{ range .Alerts }}
-              ---
-              *Alert:* {{ .Labels.alertname }}
-              *Description:* {{ .Annotations.description }}
-              *Status:* {{ .Status }}
+                *アラート:* {{ .Labels.alertname }} 
+                *概要:* {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}概要なし{{ end }}
+                *ランブック:* {{ if .Annotations.runbook_url }}{{ .Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
+                *重大度:* {{ .Labels.severity }}
+                *詳細情報:*
+                  • *alertname:* {{ .Labels.alertname }}
+                  • *instance:* {{ if .Labels.instance }}{{ .Labels.instance }}{{ else }}N/A{{ end }}
+                  • *job:* {{ if .Labels.job }}{{ .Labels.job }}{{ else }}N/A{{ end }}
+                  • *description:* {{ if .Annotations.description }}{{ .Annotations.description }}{{ else }}説明なし{{ end }}
               {{ end }}
-      - name: slack-other
-        slack_configs:
-          - channel: '#other-alerts'
-            send_resolved: true
-            text: |
-              *Grouped Alerts:*
-              {{ range .Alerts }}
-              ---
-              *Alert:* {{ .Labels.alertname }}
-              *Instance:* {{ .Labels.instance }}
-              *Status:* {{ .Status }}
-              {{ end }}
-
+            title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 監視イベント通知'
+      # - name: flask
+      #   webhook_configs:
+      #     - url: 'http://monitoring-master-ml:5000/alert'  # Flaskサーバにアラートを送信
     route:
-      group_interval: 3m  # グループ化の間隔
-      group_wait: 30s     # グループ化を開始するまでの待機時間
+      group_interval: 3m
+      group_wait: 3m
       group_by:
-        - instance  # インスタンス単位でグループ化
+        # - alertname  # 'alertname'でグループ化
+        # - instance   # 'instance'でもグループ化
+        #- severity
+        - job
       repeat_interval: 12h
-      receiver: "slack-other"
-
+      receiver: "slack"  # デフォルトレシーバを "slack" に設定
       routes:
-        - matchers:
-          receiver: "slack-instance-specific"
-          group_by:
-          group_interval: 3m
-          group_wait: 30s
-          continue: true
-        - receiver: "slack-other"
-          continue: false
+        - match:
+            alertname: DeadMansSwitch
+          receiver: "null"
+        - receiver: slack  # Slackへの通知
+          continue: true  # Slackへ通知後も続行しない
+        # - receiver: flask
+        #   continue: true  # Flaskへ通知後も続行する
 
 
+
+
+
+
+
+# {{ if (and (not .Labels.namespace) (not .Labels.exported_namespace) (not .Labels.pod)) }}• *id:* {{ if .Labels.id }} {{ .Labels.id }} {{ else }} N/A {{ end }}
+#                   {{ else }}• *namespace:* {{ if .Labels.namespace }}{{ .Labels.namespace }}{{ else }}N/A{{ end }}
+#                   • *exported_namespace:* {{ if .Labels.exported_namespace }}{{ .Labels.exported_namespace }}{{ else }}N/A{{ end }}
+#                   • *pod:* {{ if .Labels.pod }}{{ .Labels.pod }}{{ else }}N/A{{ end }}
+#                   {{ end }}• *job:* {{ if .Labels.job }}{{ .Labels.job }}{{ else }}N/A{{ end }}
+#               {{ end }}

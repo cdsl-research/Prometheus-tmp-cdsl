@@ -25,7 +25,7 @@ data:
       ### 通信関連の監視
       ## [ICMP]
       - job_name: 'ICMP-Router' #Routerオンリ
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [icmp]
@@ -42,7 +42,7 @@ data:
             replacement: monitoring-master-ml:30000
 
       - job_name: 'ICMP-Swich' #Swichオンリ
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [icmp]
@@ -59,7 +59,7 @@ data:
             replacement: monitoring-master-ml:30000
 
       - job_name: 'ICMP-Firewall' #Farewallオンリ
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [icmp]
@@ -75,7 +75,7 @@ data:
             replacement: monitoring-master-ml:30000
 
       - job_name: 'ICMP-NAS' #NASオンリ
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [icmp]
@@ -92,7 +92,7 @@ data:
             replacement: monitoring-master-ml:30000
 
       - job_name: 'ICMP-ESXi-Host' ###ESXiが入った物理機器オンリ
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [icmp]
@@ -104,7 +104,7 @@ data:
             - 192.168.100.24 # lotus (ESXi)
             - 192.168.100.25 # violet (ESXi)
             - 192.168.100.26 # mint (ESXi)
-            - 192.168.100.27 # lily (ESXi)
+              #- 192.168.100.27 # lily (ESXi)
             - 192.168.201.2  # Iris
             - 192.168.100.32 # Canele (ESXi)
             - 192.168.100.33 # Makaron (ESXi)
@@ -117,7 +117,7 @@ data:
             replacement: monitoring-master-ml:30000
 
       - job_name: 'ICMP-Archive' #Archiveオンリ
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [icmp]
@@ -134,7 +134,7 @@ data:
 
       # OpenVPNに対する疎通確認
       - job_name: 'ICMP-OpenVPN'
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [icmp]
@@ -151,7 +151,7 @@ data:
             
       # Core-server(ICMP)
       - job_name: 'ICMP-Core-server' #Core-serverオンリ
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [icmp]
@@ -171,7 +171,7 @@ data:
 
       ## [SSH]
       - job_name: 'SSH-NAS'
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [ssh_banner]
@@ -188,7 +188,7 @@ data:
             replacement: monitoring-master-ml:30000
 
       - job_name: 'SSH-Archive'
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [ssh_banner]
@@ -204,7 +204,7 @@ data:
             replacement: monitoring-master-ml:30000
 
       - job_name: 'SSH-Core'
-        scrape_interval: 1m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [ssh_banner]
@@ -225,7 +225,7 @@ data:
 
       ## [HTTP]
       - job_name: "HTTP-ESXi"
-        scrape_interval: 5m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [http_2xx]
@@ -237,7 +237,7 @@ data:
             - 192.168.100.24 # lotus (ESXi)
             - 192.168.100.25 # violet (ESXi)
             - 192.168.100.26 # mint (ESXi)
-            - 192.168.100.27 # lily (ESXi)
+              #- 192.168.100.27 # lily (ESXi)
             - 192.168.201.2  # Iris
             - 192.168.100.32 # Canele (コアサーバー1)
             - 192.168.100.33 # Makaron (コアサーバー2)
@@ -250,7 +250,7 @@ data:
             replacement: monitoring-master-ml:30000
       
       - job_name: "HTTP-NAS"
-        scrape_interval: 5m
+        scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [http_2xx]
@@ -269,7 +269,7 @@ data:
 
       ### ハイパーバイザ単位の監視(完成)
       - job_name: 'ESXI_exporter' # ESXiExporter用
-        scrape_interval: 1m
+        scrape_interval: 30s
         static_configs:
           - targets: ['monitoring-master-ml:32700'] # Jasmine
           - targets: ['monitoring-master-ml:32702'] # Lotus
@@ -279,10 +279,12 @@ data:
           - targets: ['monitoring-master-ml:32703'] # Violet
           - targets: ['monitoring-master-ml:32706'] # Lily
           - targets: ['monitoring-master-ml:32707'] # Iris
+          - targets: ['monitoring-master-ml:32709'] # Canele
+          - targets: ['monitoring-master-ml:32708'] # Makaron
 
       ### ここからNode単位(未完成)
       - job_name: 'archive-node-exporter'
-        scrape_interval: 1m
+        scrape_interval: 30s
         static_configs:
           - targets: ['192.168.100.31:9100']
       
@@ -316,7 +318,6 @@ data:
             target_label: __metrics_path__
             regex: (.+)
 
-      
 
 
       
