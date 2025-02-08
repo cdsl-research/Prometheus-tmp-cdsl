@@ -5,6 +5,7 @@ metadata:
   namespace: monitoring
 data:
   archive-server-monitoring-rules.yml: |-
+    ### Trafic
     groups:
     - name: Archive-Server-Check
       rules:
@@ -65,7 +66,7 @@ data:
         labels:
           severity: warning
 
-      - alert: NAS-Monitoring-SSH-Responce-time-3.0
+      - alert: Archive-Server-Monitoring-SSH-Responce-time-3.0
         annotations:
           description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
@@ -75,5 +76,69 @@ data:
         for: 3m
         labels:
           severity: warning
+
+      ### Node単位
+      ## CPU
+      - alert: Archive-Server-CPU-High-Warning
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "CPU Usage high"
+        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="archive-node-exporter", mode!="idle"}[5m])) * 100 >= 80
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: Archive-Server-CPU-High-Critical
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "CPU Usage high"
+        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="archive-node-exporter", mode!="idle"}[5m])) * 100 >= 80
+        for: 3m
+        labels:
+          severity: critical
+
+      ##Memory
+      - alert: Archive-Server-Memory-High-Warning
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Memory Usage high"
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 >= 80
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: Archive-Server-Memory-High-Critical
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Memory Usage high"
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 >= 80
+        for: 3m
+        labels:
+          severity: critical
+
+      ## Filesystem Storege
+      - alert: Archive-Server-Filesystem-Storege-High-Warning
+        annotations:
+          description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Filesystem Usage high"
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) ) * 100 >= 80
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: Archive-Server-Filesystem-Storege-High-Critical
+        annotations:
+          description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Filesystem Usage high"
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) ) * 100 >= 90
+        for: 3m
+        labels:
+          severity: critical
 
 ### ここから増やす予定

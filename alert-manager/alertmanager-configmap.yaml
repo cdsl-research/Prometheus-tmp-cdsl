@@ -2,11 +2,12 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: alertmanager
+  namespace: alert
 data:
   config.yml: |-
     global:
       resolve_timeout: 1m
-      slack_api_url: https://hooks.slack.com/services/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
+      slack_api_url: https://hooks.slack.com/services/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
 
     inhibit_rules:
       - equal:
@@ -36,61 +37,35 @@ data:
       - name: "null"
       - name: slack
         slack_configs:
-          - channel: '#monitoring-alert-v2'  # 通知を送信するSlackのチャンネル
+          - channel: '#monitoring-cdsl-alert'
             send_resolved: true
             text: |-
-              {{ range .Alerts }}
-                *アラート:* {{ .Labels.alertname }} 
-                *概要:* {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}概要なし{{ end }}
-                *ランブック:* {{ if .Annotations.runbook_url }}{{ .Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
-                *重大度:* {{ .Labels.severity }}
+              {{ range $index, $alert := .Alerts }}
+                ---------------------------
+                *アラート:* {{ $alert.Labels.alertname }} 
+                *概要:* {{ if $alert.Annotations.summary }}{{ $alert.Annotations.summary }}{{ else }}概要なし{{ end }}
+                *ランブック:* {{ if $alert.Annotations.runbook_url }}{{ $alert.Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
+                *重大度:* {{ $alert.Labels.severity }}
                 *詳細情報:*
-                  • *alertname:* {{ .Labels.alertname }}
-                  • *instance:* {{ if .Labels.instance }}{{ .Labels.instance }}{{ else }}N/A{{ end }}
-                  • *job:* {{ if .Labels.job }}{{ .Labels.job }}{{ else }}N/A{{ end }}
-                  • *description:* {{ if .Annotations.description }}{{ .Annotations.description }}{{ else }}説明なし{{ end }}
+                  • *alertname:* {{ $alert.Labels.alertname }}
+                  • *instance:* {{ if $alert.Labels.instance }}{{ $alert.Labels.instance }}{{ else }}N/A{{ end }}
+                  • *job:* {{ if $alert.Labels.job }}{{ $alert.Labels.job }}{{ else }}N/A{{ end }}
+                  • *description:* {{ if $alert.Annotations.description }}{{ $alert.Annotations.description }}{{ else }}説明なし{{ end }}
               {{ end }}
+              ---------------------------
             title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 監視イベント通知'
-      - name: flask
-        webhook_configs:
-          - url: 'http://monitoring-master-ml:5000/alert'  # Flaskサーバにアラートを送信
+
     route:
-      group_interval: 3m
-      group_wait: 3m
+      group_interval: 5m
+      group_wait: 5m
       group_by:
-        - alertname  # 'alertname'でグループ化
-        - instance   # 'instance'でもグループ化
-        #- severity
-        #- job
+        - instance
+        - alertname
       repeat_interval: 12h
-      receiver: "slack"  # デフォルトレシーバを "slack" に設定
+      receiver: "slack"
       routes:
         - match:
             alertname: DeadMansSwitch
           receiver: "null"
-        - receiver: slack  # Slackへの通知
-          continue: true  # Slackへ通知後も続行しない
-        - receiver: flask
-          continue: true  # Flaskへ通知後も続行する
-
-
-
-
-
-
-
-# {{ if (and (not .Labels.namespace) (not .Labels.exported_namespace) (not .Labels.pod)) }}• *id:* {{ if .Labels.id }} {{ .Labels.id }} {{ else }} N/A {{ end }}
-#                   {{ else }}• *namespace:* {{ if .Labels.namespace }}{{ .Labels.namespace }}{{ else }}N/A{{ end }}
-#                   • *exported_namespace:* {{ if .Labels.exported_namespace }}{{ .Labels.exported_namespace }}{{ else }}N/A{{ end }}
-#                   • *pod:* {{ if .Labels.pod }}{{ .Labels.pod }}{{ else }}N/A{{ end }}
-#                   {{ end }}• *job:* {{ if .Labels.job }}{{ .Labels.job }}{{ else }}N/A{{ end }}
-#               {{ end }}
-
-
-
-
-
-
-
-
-
+        - receiver: slack
+          continue: true

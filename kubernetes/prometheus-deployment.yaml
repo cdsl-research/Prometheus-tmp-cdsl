@@ -66,4 +66,4 @@ spec:
           - configMap:
               name: openvpn-rule 
           - configMap:
-              name: core-server-rule 
+              name: core-server-rule
