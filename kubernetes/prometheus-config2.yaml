@@ -104,7 +104,7 @@ data:
             - 192.168.100.24 # lotus (ESXi)
             - 192.168.100.25 # violet (ESXi)
             - 192.168.100.26 # mint (ESXi)
-              #- 192.168.100.27 # lily (ESXi)
+            - 192.168.100.27 # lily (ESXi) Doktorの運用が始まったらなくす
             - 192.168.201.2  # Iris
             - 192.168.100.32 # Canele (ESXi)
             - 192.168.100.33 # Makaron (ESXi)
@@ -237,7 +237,7 @@ data:
             - 192.168.100.24 # lotus (ESXi)
             - 192.168.100.25 # violet (ESXi)
             - 192.168.100.26 # mint (ESXi)
-              #- 192.168.100.27 # lily (ESXi)
+            - 192.168.100.27 # lily (ESXi) #ここはDoktorの運用が始まったらなくす
             - 192.168.201.2  # Iris
             - 192.168.100.32 # Canele (コアサーバー1)
             - 192.168.100.33 # Makaron (コアサーバー2)
@@ -287,6 +287,57 @@ data:
         scrape_interval: 30s
         static_configs:
           - targets: ['192.168.100.31:9100']
+
+
+      ### ここからDoktorの開発環境の対象の設定
+      ## Doktor-vev-icmp(ICMP)
+      - job_name: 'ICMP-Doktor-vev' #Core-serverオンリ
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [icmp]
+        static_configs:
+          - targets:
+            - doktor-m-v2 
+            - doktor-worker1-v2
+            - doktor-worker2-v2
+            - doktor-worker3-v2
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: monitoring-master-ml:30000
+              
+      ## Doktor-vev-ssh(SSH)       
+      - job_name: 'SSH-Doktor-dev'
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [ssh_banner]
+        static_configs:
+          - targets:
+            - doktor-m-v2:22
+            - doktor-worker1-v2:22
+            - doktor-worker2-v2:22
+            - doktor-worker3-v2:22
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: monitoring-master-ml:30000
+
+      ## Doktorの開発環境のノード
+      - job_name: 'doktor-dev-node'
+        scrape_interval: 30s
+        static_configs:
+          - targets: ['doktor-m-v2:32300']
+          - targets: ['doktor-worker1-v2:32300']
+          - targets: ['doktor-worker2-v2:32300']
+          - targets: ['doktor-worker3-v2:32300']
       
       ### monitoring-Cluster専用
       - job_name: 'kubernetes-nodes'

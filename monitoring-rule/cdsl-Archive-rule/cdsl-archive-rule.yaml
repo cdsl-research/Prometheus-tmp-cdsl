@@ -94,7 +94,7 @@ data:
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "CPU Usage high"
-        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="archive-node-exporter", mode!="idle"}[5m])) * 100 >= 80
+        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="archive-node-exporter", mode!="idle"}[5m])) * 100 >= 90
         for: 3m
         labels:
           severity: critical
@@ -105,7 +105,7 @@ data:
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage high"
-        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 >= 80
+        expr: (node_memory_MemTotal_bytes{job="archive-node-exporter"} - node_memory_MemAvailable_bytes{job="archive-node-exporter"}) / node_memory_MemTotal_bytes{job="archive-node-exporter"} * 100 >= 80
         for: 3m
         labels:
           severity: warning
@@ -115,7 +115,7 @@ data:
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage high"
-        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 >= 80
+        expr: (node_memory_MemTotal_bytes{job="archive-node-exporter"} - node_memory_MemAvailable_bytes{job="archive-node-exporter"}) / node_memory_MemTotal_bytes{job="archive-node-exporter"} * 100 >= 90
         for: 3m
         labels:
           severity: critical
@@ -126,7 +126,7 @@ data:
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Filesystem Usage high"
-        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) ) * 100 >= 80
+        expr: (1 - (node_filesystem_avail_bytes{job="archive-node-exporter"} / node_filesystem_size_bytes{job="archive-node-exporter"}) ) * 100 >= 80
         for: 3m
         labels:
           severity: warning
@@ -136,7 +136,7 @@ data:
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Filesystem Usage high"
-        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) ) * 100 >= 90
+        expr: (1 - (node_filesystem_avail_bytes{job="archive-node-exporter"} / node_filesystem_size_bytes{job="archive-node-exporter"}) ) * 100 >= 90
         for: 3m
         labels:
           severity: critical

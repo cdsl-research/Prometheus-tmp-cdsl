@@ -118,7 +118,7 @@ data:
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "CPU Usage High"
         expr: |-
-          vmware_host_cpu_usage{job="ESXI_exporter"}/vmware_host_cpu_max{job="ESXI_exporter"} * 100 >= 70
+          vmware_host_cpu_usage{job="ESXI_exporter"}/vmware_host_cpu_max{job="ESXI_exporter"} * 100 >= 80
         for: 3m
         labels:
           severity: warning
@@ -129,7 +129,7 @@ data:
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "CPU Usage High"
         expr: |-
-          vmware_host_cpu_usage{job="ESXI_exporter"}/vmware_host_cpu_max{job="ESXI_exporter"} * 100 >= 80
+          vmware_host_cpu_usage{job="ESXI_exporter"}/vmware_host_cpu_max{job="ESXI_exporter"} * 100 >= 90
         for: 3m
         labels:
           severity: critical
@@ -141,7 +141,7 @@ data:
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage High"
         expr: |-
-          vmware_host_memory_usage{job="ESXI_exporter"}/vmware_host_memory_max{job="ESXI_exporter"} * 100 >= 70
+          vmware_host_memory_usage{job="ESXI_exporter"}/vmware_host_memory_max{job="ESXI_exporter"} * 100 >= 80
         for: 3m
         labels:
           severity: warning
@@ -152,7 +152,7 @@ data:
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage High"
         expr: |-
-          vmware_host_memory_usage{job="ESXI_exporter"}/vmware_host_memory_max{job="ESXI_exporter"} * 100 >= 80
+          vmware_host_memory_usage{job="ESXI_exporter"}/vmware_host_memory_max{job="ESXI_exporter"} * 100 >= 90
         for: 3m
         labels:
           severity: critical
