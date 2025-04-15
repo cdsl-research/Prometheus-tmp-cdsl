@@ -22,9 +22,9 @@ data:
         #read_recent: true
 
     scrape_configs:
-      ### 通信関連の監視
+      ##### [monitoring-target-internal]
       ## [ICMP]
-      - job_name: 'ICMP-Router' #Routerオンリ
+      - job_name: 'Internal-ICMP-Router' #Routerオンリ
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -32,7 +32,6 @@ data:
         static_configs:
           - targets:
               - 192.168.100.1  # ASUS TUF-AX5400 (ルータ1)
-              - 192.168.201.1  # ASUS Router 11ax(ルータ2)
         relabel_configs:
           - source_labels: [__address__]
             target_label: __param_target
@@ -41,7 +40,7 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
 
-      - job_name: 'ICMP-Swich' #Swichオンリ
+      - job_name: 'Internal-ICMP-Swich' #Swichオンリ
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -58,7 +57,7 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
 
-      - job_name: 'ICMP-Firewall' #Farewallオンリ
+      - job_name: 'Internal-ICMP-Firewall' #Farewallオンリ
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -74,7 +73,7 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
 
-      - job_name: 'ICMP-NAS' #NASオンリ
+      - job_name: 'Internal-ICMP-NAS' #NASオンリ
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -91,7 +90,7 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
 
-      - job_name: 'ICMP-ESXi-Host' ###ESXiが入った物理機器オンリ
+      - job_name: 'Internal-ICMP-ESXi-Host' ###ESXiが入った物理機器オンリ
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -104,8 +103,7 @@ data:
             - 192.168.100.24 # lotus (ESXi)
             - 192.168.100.25 # violet (ESXi)
             - 192.168.100.26 # mint (ESXi)
-            - 192.168.100.27 # lily (ESXi) Doktorの運用が始まったらなくす
-            - 192.168.201.2  # Iris
+            - 192.168.100.27 # lily (ESXi) 
             - 192.168.100.32 # Canele (ESXi)
             - 192.168.100.33 # Makaron (ESXi)
         relabel_configs:
@@ -116,7 +114,7 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
 
-      - job_name: 'ICMP-Archive' #Archiveオンリ
+      - job_name: 'Internal-ICMP-Archive' #Archiveオンリ
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -132,25 +130,9 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
 
-      # OpenVPNに対する疎通確認
-      - job_name: 'ICMP-OpenVPN'
-        scrape_interval: 30s
-        metrics_path: /probe
-        params:
-          module: [icmp]
-        static_configs:
-          - targets:
-              - 192.168.200.1
-        relabel_configs:
-          - source_labels: [__address__]
-            target_label: __param_target
-          - source_labels: [__param_target]
-            target_label: instance
-          - target_label: __address__
-            replacement: 192.168.201.8:30000
             
       # Core-server(ICMP)
-      - job_name: 'ICMP-Core-server' #Core-serverオンリ
+      - job_name: 'Internal-ICMP-Core-server' #Core-serverオンリ
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -170,7 +152,7 @@ data:
             replacement: monitoring-master-ml:30000
 
       ## [SSH]
-      - job_name: 'SSH-NAS'
+      - job_name: 'Internal-SSH-NAS'
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -187,7 +169,7 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
 
-      - job_name: 'SSH-Archive'
+      - job_name: 'Internal-SSH-Archive'
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -203,7 +185,7 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
 
-      - job_name: 'SSH-Core'
+      - job_name: 'Internal-SSH-Core'
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -222,9 +204,8 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
      
-
       ## [HTTP]
-      - job_name: "HTTP-ESXi"
+      - job_name: "Internal-HTTP-ESXi"
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -237,8 +218,8 @@ data:
             - 192.168.100.24 # lotus (ESXi)
             - 192.168.100.25 # violet (ESXi)
             - 192.168.100.26 # mint (ESXi)
-            - 192.168.100.27 # lily (ESXi) #ここはDoktorの運用が始まったらなくす
-            - 192.168.201.2  # Iris
+            - 192.168.100.27 # lily (ESXi) #ここはDoktorの運用が始まったらなくす(これはなくていい)
+            #- 192.168.201.2  # Iris
             - 192.168.100.32 # Canele (コアサーバー1)
             - 192.168.100.33 # Makaron (コアサーバー2)
         relabel_configs:
@@ -249,7 +230,7 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
       
-      - job_name: "HTTP-NAS"
+      - job_name: "Internal-HTTP-NAS"
         scrape_interval: 30s
         metrics_path: /probe
         params:
@@ -268,7 +249,7 @@ data:
 
 
       ### ハイパーバイザ単位の監視(完成)
-      - job_name: 'ESXI_exporter' # ESXiExporter用
+      - job_name: 'Internal-ESXI_exporter' # ESXiExporter用
         scrape_interval: 30s
         static_configs:
           - targets: ['monitoring-master-ml:32700'] # Jasmine
@@ -278,27 +259,35 @@ data:
           - targets: ['monitoring-master-ml:32701'] # Rose
           - targets: ['monitoring-master-ml:32703'] # Violet
           - targets: ['monitoring-master-ml:32706'] # Lily
-          - targets: ['monitoring-master-ml:32707'] # Iris
+          #- targets: ['monitoring-master-ml:32707'] # Iris
           - targets: ['monitoring-master-ml:32709'] # Canele
           - targets: ['monitoring-master-ml:32708'] # Makaron
 
       ### ここからNode単位(未完成)
-      - job_name: 'archive-node-exporter'
+      - job_name: 'Internal-archive-node-exporter'
         scrape_interval: 30s
         static_configs:
           - targets: ['192.168.100.31:9100']
 
+      ### Core-serverの監視
+      - job_name: 'Internal-Core-server-systemd-exporter'
+        scrape_interval: 30s
+        static_configs:
+          - targets: ['192.168.100.35:9558']
+          - targets: ['192.168.100.36:9558']
+          - targets: ['192.168.100.37:9558']
+          - targets: ['192.168.100.38:9558']
+
 
       ### ここからDoktorの開発環境の対象の設定
-      ## Doktor-vev-icmp(ICMP)
-      - job_name: 'ICMP-Doktor-vev' #Core-serverオンリ
+      - job_name: 'ICMP-Doktor-dev' #Core-serverオンリ
         scrape_interval: 30s
         metrics_path: /probe
         params:
           module: [icmp]
         static_configs:
           - targets:
-            - doktor-m-v2 
+            - doktor-m-v2
             - doktor-worker1-v2
             - doktor-worker2-v2
             - doktor-worker3-v2
@@ -309,8 +298,7 @@ data:
             target_label: instance
           - target_label: __address__
             replacement: monitoring-master-ml:30000
-              
-      ## Doktor-vev-ssh(SSH)       
+
       - job_name: 'SSH-Doktor-dev'
         scrape_interval: 30s
         metrics_path: /probe
@@ -330,163 +318,250 @@ data:
           - target_label: __address__
             replacement: monitoring-master-ml:30000
 
-      ## Doktorの開発環境のノード
       - job_name: 'doktor-dev-node'
         scrape_interval: 30s
         static_configs:
-          - targets: ['doktor-m-v2:32300']
-          - targets: ['doktor-worker1-v2:32300']
-          - targets: ['doktor-worker2-v2:32300']
-          - targets: ['doktor-worker3-v2:32300']
-      
-      ### monitoring-Cluster専用
-      - job_name: 'kubernetes-nodes'
-        scheme: https
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        kubernetes_sd_configs:
-          - role: node
+          - targets: ['doktor-m-v2:9100']
+          - targets: ['doktor-worker1-v2:9100']
+          - targets: ['doktor-worker2-v2:9100']
+          - targets: ['doktor-worker3-v2:9100']
+
+      ## [HTTP]
+      - job_name: "Doktor-Dev-http-page"
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+        static_configs:
+          - targets:
+            - doktor-m-v2
+            - doktor-worker1-v2
+            - doktor-worker2-v2
+            - doktor-worker3-v2
         relabel_configs:
-          - action: labelmap
-            regex: __meta_kubernetes_node_label_(.+)
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
           - target_label: __address__
-            replacement: kubernetes.default.svc:443
-          - source_labels: [__meta_kubernetes_node_name]
-            regex: (.+)
-            target_label: __metrics_path__
-            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+            replacement: doktor-m-v2:32200
 
-      - job_name: 'kubernetes-pods'
-        kubernetes_sd_configs:
-          - role: pod
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-            action: keep
-            regex: true
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-            action: replace
-            target_label: __metrics_path__
-            regex: (.+)
-
-
+      - job_name: 'Doktor-Dev-Cadvisor'
+        scrape_interval: 30s
+        static_configs:
+          - targets: ['doktor-m-v2:30080']
 
       
-#---いらない
- 
-      # # SSHポートの監視対象
-      # - job_name: 'harvest-port-ssh'
-      #   scrape_interval: 1m
-      #   metrics_path: /probe
-      #   params:
-      #     module: [ssh_banner]
-      #   static_configs:
-      #     - targets:
-      #         - 192.168.201.8:22 
-      #         - 192.168.201.9:22 
-      #         - 192.168.201.10:22 
-      #         - 192.168.201.11:22 
-      #   relabel_configs:
-      #     - source_labels: [__address__]
-      #       target_label: __param_target
-      #     - source_labels: [__param_target]
-      #       target_label: instance
-      #     - target_label: __address__
-      #       replacement: monitoring-master-ml:30000
-    #     #Plum上に配置しているクラスタ⇨Irisに変更予定
-    #   - job_name: 'harvest-node-exporter'
-    #   scrape_interval: 1m
-    #   static_configs:
-    #     - targets: ['192.168.201.8:9100']
-    #     - targets: ['192.168.201.9:9100']
-    #     - targets: ['192.168.201.10:9100']
-    #     - targets: ['192.168.201.11:9100']
+      ##### [monitoring-target-external]
+      ## [ICMP]
+      - job_name: 'External-ICMP-Router' #Routerオンリ
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [icmp]
+        static_configs:
+          - targets:
+              - 192.168.201.1  # ASUS Router 11ax(ルータ2)
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: monitoring-master-ml:30000
 
-    # # HTTPポートの監視対象
-    # - job_name: "harvest-http-check"
-    #   scrape_interval: 5m
-    #   metrics_path: /probe
-    #   params:
-    #     module: [http_2xx]
-    #   static_configs:
-    #     - targets:
-    #       - http://outside-prometheus-ml5/
-    #       - http://outside-prometheus-ml5/21-2/
-    #       - http://outside-prometheus-ml5/login/
-    #   relabel_configs:
-    #     - source_labels: [__address__]
-    #       target_label: __param_target
-    #     - source_labels: [__param_target]
-    #       target_label: instance
-    #     - target_label: __address__
-    #       replacement: monitoring-master-ml:30000
+      - job_name: 'External-ICMP-ESXi-Host' ###ESXiが入った物理機器オンリ
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [icmp]
+        static_configs:
+          - targets:
+            - 192.168.201.2  # Iris
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: monitoring-master-ml:30000
+
+      ## [HTTP]
+      - job_name: "External-HTTP-ESXi"
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+        static_configs:
+          - targets:
+            - 192.168.201.2  # Iris
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: monitoring-master-ml:30000
+
+      ## ESXi(Irisに対するESXi-exporterの監視)
+      - job_name: 'External-ESXI_exporter' # ESXiExporter用
+        scrape_interval: 30s
+        static_configs:
+          - targets: ['monitoring-master-ml:32707'] # Iris
+      
+      ## External-Doktor-prod-icmp(ICMP)
+      - job_name: 'External-ICMP-Doktor-prod' 
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [icmp]
+        static_configs:
+          - targets:
+            - 192.168.201.8
+            - 192.168.201.9
+            - 192.168.201.10
+            - 192.168.201.11
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: monitoring-master-ml:30000
+
+      ## External-Doktor-prod-ssh(SSH)
+      - job_name: 'External-SSH-Doktor-prod'
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [ssh_banner]
+        static_configs:
+          - targets:
+            - 192.168.201.8:22
+            - 192.168.201.9:22
+            - 192.168.201.10:22
+            - 192.168.201.11:22
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: monitoring-master-ml:30000
+
+      ## Doktorの本番環境のノード
+      - job_name: 'External-doktor-prod-node'
+        scrape_interval: 30s
+        static_configs:
+          - targets: ['192.168.201.8:9100']
+          - targets: ['192.168.201.9:9100']
+          - targets: ['192.168.201.10:9100']
+          - targets: ['192.168.201.11:9100']
+
+      # OpenVPNに対する疎通確認
+      - job_name: 'External-ICMP-OpenVPN'
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [icmp]
+        static_configs:
+          - targets:
+              - 192.168.200.1
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: 192.168.201.8:32200
+
+      ## [HTTP]
+      - job_name: "External-Doktor-http-page"
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+        static_configs:
+          - targets:
+            - http://192.168.201.8/
+            - http://192.168.201.9/
+            - http://192.168.201.10/
+            - http://192.168.201.11/
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: 192.168.201.8:32200
+
+      ## Internal-esxi-backup(ESXiのバックアップ用のVM)
+      ## [ICMP]
+      - job_name: 'Internal-esxi-backup-ICMP' 
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [icmp]
+        static_configs:
+          - targets:
+            - 192.168.100.250
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: monitoring-master-ml:30000
+
+      ## [SSH]
+      - job_name: 'Internal-esxi-backup-SSH'
+        scrape_interval: 30s
+        metrics_path: /probe
+        params:
+          module: [ssh_banner]
+        static_configs:
+          - targets:
+            - 192.168.100.250:22
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: monitoring-master-ml:30000
+      
+      - job_name: 'Internal-esxi-backup-node-exporter'
+        scrape_interval: 30s
+        static_configs:
+          - targets: ['192.168.100.250:9100']
+
+      - job_name: 'Internal-esxi-backup-systemd-exporter'
+        scrape_interval: 30s
+        static_configs:
+          - targets: ['192.168.100.250:9558']
+
+      #Lidar(ラズパイ)からIrisのVMへの疎通確認
+      - job_name: 'Internal-TCP-lidar'
+        scrape_interval: 10s
+        metrics_path: /probe
+        params:
+          module: [tcp_connect]
+        static_configs:
+          - targets:
+            - 192.168.201.4:8000
+            - 192.168.201.6:8000
+            - 192.168.201.7:8000
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: 192.168.100.252:9115
+        
 
 
-    # ###ここからテスト
-    # - job_name: 'ICMP-Black-box-test' #- job_name: 'ICMP-Black-box-test'
-    #   scrape_interval: 1m
-    #   metrics_path: /probe
-    #   params:
-    #     module: [icmp]
-    #   static_configs:
-    #     - targets:
-    #       - outside-prometheus-ml5
-    #       - outside-prometheus-wc1
-    #       - outside-prometheus-wc2
-    #       - outside-prometheus-wc3
-    #   relabel_configs:
-    #     - source_labels: [__address__]
-    #       target_label: __param_target
-    #     - source_labels: [__param_target]
-    #       target_label: instance
-    #     - target_label: __address__
-    #       replacement: monitoring-master-ml:30000
-
-
-
-    # - job_name: 'test'
-    #   scrape_interval: 1m
-    #   static_configs:
-    #     - targets: 
-    #       - outside-prometheus-ml5:9100
-    #       - outside-prometheus-wc1:9100
-    #       - outside-prometheus-wc2:9100
-    #       - outside-prometheus-wc3:9100
-
-    # # SSHポートの監視対象
-    # - job_name: 'test-port-ssh'
-    #   scrape_interval: 1m
-    #   metrics_path: /probe
-    #   params:
-    #     module: [ssh_banner]
-    #   static_configs:
-    #     - targets:
-    #       - outside-prometheus-ml5:22
-    #       - outside-prometheus-wc1:22
-    #       - outside-prometheus-wc2:22
-    #       - outside-prometheus-wc3:22
-    #   relabel_configs:
-    #     - source_labels: [__address__]
-    #       target_label: __param_target
-    #     - source_labels: [__param_target]
-    #       target_label: instance
-    #     - target_label: __address__
-    #       replacement: monitoring-master-ml:30000
-
-    # - job_name: 'Black-box-http-test'
-    #   scrape_interval: 1m
-    #   metrics_path: /probe
-    #   params:
-    #     module: [icmp]
-    #   static_configs:
-    #     - targets:
-    #       - http://outside-prometheus-ml5/
-    #       - http://outside-prometheus-ml5/register/
-    #       - http://outside-prometheus-ml5/login/
-    #   relabel_configs:
-    #     - source_labels: [__address__]
-    #       target_label: __param_target
-    #     - source_labels: [__param_target]
-    #       target_label: instance
-    #     - target_label: __address__
-    #       replacement: monitoring-master-ml:30000
+      - job_name: 'Internal_backup_pushgateway'
+        scrape_interval: 30s
+        static_configs:
+          - targets: ['monitoring-master-ml:30040']

@@ -1,113 +1,115 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: doktor-dev-server-rule
+  name: doktor-prob-server-rule
   namespace: monitoring
 data:
-  doktor-dev-server-monitoring-rules.yml: |-
+  doktor-prob-server-monitoring-rules.yml: |-
     ### Trafic
     groups:
-    - name: Doktor-Dev-Node-Check
+    - name: External-Clematis-Node-Check
       rules:
       ### ICMP
-      - alert: Doktor Dev Node ICMP Check
+      - alert: External Clematis Node ICMP Check
         annotations:
           description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://cdsl-tut.esa.io/posts/2795
-          summary: "Doktor Dev Server ICMP not connect"
+          summary: "Doktor Server ICMP not connect"
         expr: |-
-          probe_success{job="ICMP-Doktor-dev"} == 0
+          probe_success{job="External-ICMP-Doktor-prod"} == 0
         for: 3m
         labels:
           severity: critical
 
-      - alert: Doktor Dev Node SSH Check
+      - alert: External Clematis Node SSH Check
         annotations:
           description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://cdsl-tut.esa.io/posts/2795
-          summary: "Doktor Dev Server SSH not connect"
+          summary: "Doktor Server SSH not connect"
         expr: |-
-          probe_success{job="SSH-Doktor-dev"} == 0
+          probe_success{job="External-SSH-Doktor-prod"} == 0
         for: 3m
         labels:
           severity: critical
 
-      - alert: Doktor Dev Node Memory Average Usage High 80%
+      - alert: External Clematis Node Memory Average Usage High 80%
         annotations:
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://cdsl-tut.esa.io/posts/2795
           summary:  "Memory Usage high"
-        expr: (sum(node_memory_MemTotal_bytes{job="doktor-dev-node"}) - sum(node_memory_MemAvailable_bytes{job="doktor-dev-node"})) / sum(node_memory_MemTotal_bytes{job="doktor-dev-node"}) * 100 >= 80
+        expr: (sum(node_memory_MemTotal_bytes{job="External-doktor-prod-node"}) - sum(node_memory_MemAvailable_bytes{job="External-doktor-prod-node"})) / sum(node_memory_MemTotal_bytes{job="External-doktor-prod-node"}) * 100 >= 80
         for: 3m
         labels:
           severity: warning
 
-      - alert: Doktor Dev Node Memory Average Usage High 90%
+      - alert: External Clematis Node Memory Average Usage High 90%
         annotations:
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://cdsl-tut.esa.io/posts/2795
           summary:  "Memory Usage high"
-        expr: (sum(node_memory_MemTotal_bytes{job="doktor-dev-node"}) - sum(node_memory_MemAvailable_bytes{job="doktor-dev-node"})) / sum(node_memory_MemTotal_bytes{job="doktor-dev-node"}) * 100 >= 90
+        expr: (sum(node_memory_MemTotal_bytes{job="External-doktor-prod-node"}) - sum(node_memory_MemAvailable_bytes{job="External-doktor-prod-node"})) / sum(node_memory_MemTotal_bytes{job="External-doktor-prod-node"}) * 100 >= 80
         for: 3m
         labels:
           severity: critical
 
-      - alert: Doktor Dev Node Filesystem Average Usage High 80%
+      - alert: External Clematis Node Filesystem Average Usage High 80%
         annotations:
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://cdsl-tut.esa.io/posts/2795
           summary:  "Filesystem Usage high"
-        expr: (1 - (sum(node_filesystem_avail_bytes{job="doktor-dev-node", mountpoint="/"}) / sum(node_filesystem_size_bytes{job="doktor-dev-node", mountpoint="/"}))) * 100 >= 80
+        expr: (1 - (sum(node_filesystem_avail_bytes{job="External-doktor-prod-node", mountpoint="/"}) / sum(node_filesystem_size_bytes{job="External-doktor-prod-node", mountpoint="/"}))) * 100 >= 80
         for: 3m
         labels:
           severity: warning
 
-      - alert: Doktor Dev Node Filesystem Average Usage High 90%
+      - alert: External Clematis Node Filesystem Average Usage High 90%
         annotations:
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://cdsl-tut.esa.io/posts/2795
           summary:  "Filesystem Usage high"
-        expr: (1 - (sum(node_filesystem_avail_bytes{job="doktor-dev-node", mountpoint="/"}) / sum(node_filesystem_size_bytes{job="doktor-dev-node", mountpoint="/"}))) * 100 >= 90
+        expr: (1 - (sum(node_filesystem_avail_bytes{job="External-doktor-prod-node", mountpoint="/"}) / sum(node_filesystem_size_bytes{job="External-doktor-prod-node", mountpoint="/"}))) * 100 >= 90
         for: 3m
         labels:
           severity: critical
 
-      - alert: Doktor Dev front page no response
+      - alert: External Doktor front page no response
         annotations:
           description: "front page no response `{{$labels.instance}}`"
           runbook_url: https://cdsl-tut.esa.io/posts/2795
           summary:  "front page no response"
-        expr: probe_success{job="Doktor-Dev-http-page"} == 0
+        expr: probe_success{job="External-Doktor-http-page"} == 0
         for: 3m
         labels:
           severity: critical
 
-      - alert: Doktor Dev front page HTTP status code err
+      - alert: External Doktor front page HTTP status code err 
         annotations:
           description: "front page HTTP status code err `{{$labels.instance}}`"
           runbook_url: https://cdsl-tut.esa.io/posts/2795
           summary:  "status code err"
-        expr: probe_http_status_code{job="Doktor-Dev-http-page"} >= 400
+        expr: probe_http_status_code{job="External-Doktor-http-page"} >= 400
+        for: 3m
+        labels:
+          severity: warning
+      
+      - alert: External Doktor front page HTTP responce time late 1s
+        annotations:
+          description: "front page HTTP responce time late 1s `{{$labels.instance}}`"
+          runbook_url: https://cdsl-tut.esa.io/posts/2795
+          summary:  "responce time late 1s"
+        expr: probe_duration_seconds{job="External-Doktor-http-page"} >= 1
         for: 3m
         labels:
           severity: warning
 
-      #- alert: Doktor Dev front page HTTP responce time late 1s
-      #  annotations:
-      #    description: "front page HTTP responce time late 1s `{{$labels.instance}}`"
-      #    runbook_url: https://cdsl-tut.esa.io/posts/2795
-      #    summary:  "responce time late 1s"
-      #  expr: probe_duration_seconds{job="Doktor-Dev-http-page"} >= 1
-      #  for: 3m
-      #  labels:
-      #    severity: warning
-
-      - alert: Doktor Dev front page HTTP responce time late 3s
+      - alert: External Doktor front page HTTP responce time late 3s
         annotations:
           description: "front page HTTP responce time late 3s `{{$labels.instance}}`"
           runbook_url: https://cdsl-tut.esa.io/posts/2795
           summary:  "responce time late 3s"
-        expr: probe_duration_seconds{job="Doktor-Dev-http-page"} >= 3
+        expr: probe_duration_seconds{job="External-Doktor-http-page"} >= 3
         for: 3m
         labels:
           severity: critical
+
+   

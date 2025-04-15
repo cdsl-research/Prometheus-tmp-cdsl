@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: archive-server-rule
+  namespace: monitoring
+data:
+  archive-server-monitoring-rules.yml: |-
+    ### Trafic
+    groups:
+    - name: Internal-Archive-Server-Check
+      rules:
+      ### ICMP
+      - alert: Internal Archive Server ICMP-Check
+        annotations:
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "Archive Server ICMP not connect"
+        expr: |-
+          probe_success{job="Internal-ICMP-Archive"} == 0
+        for: 1m
+        labels:
+          severity: critical
+
+      ### Node単位
+      ## CPU
+      - alert: Internal Archive Server CPU-High 80%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "CPU Usage high"
+        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="Internal-archive-node-exporter", mode!="idle"}[5m])) * 100 >= 80
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: Internal Archive Server CPU-High 90%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "CPU Usage high"
+        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="Internal-archive-node-exporter", mode!="idle"}[5m])) * 100 >= 90
+        for: 3m
+        labels:
+          severity: critical
+
+      ##Memory
+      - alert: Internal Archive Server Memory High 80%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Memory Usage high"
+        expr: (node_memory_MemTotal_bytes{job="Internal-archive-node-exporter"} - node_memory_MemAvailable_bytes{job="Internal-archive-node-exporter"}) / node_memory_MemTotal_bytes{job="Internal-archive-node-exporter"} * 100 >= 80
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: Internal Archive Server Memory High 90%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Memory Usage high"
+        expr: (node_memory_MemTotal_bytes{job="Internal-archive-node-exporter"} - node_memory_MemAvailable_bytes{job="Internal-archive-node-exporter"}) / node_memory_MemTotal_bytes{job="Internal-archive-node-exporter"} * 100 >= 90
+        for: 3m
+        labels:
+          severity: critical
+
+      ## Filesystem Storege
+      - alert: Internal Archive Server Filesystem Storege High 80%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Filesystem Usage high"
+        expr: (1 - (node_filesystem_avail_bytes{job="Internal-archive-node-exporter"} / node_filesystem_size_bytes{job="Internal-archive-node-exporter"}) ) * 100 >= 80
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: Internal Archive Server Filesystem Storege High 90%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Filesystem Usage high"
+        expr: (1 - (node_filesystem_avail_bytes{job="Internal-archive-node-exporter"} / node_filesystem_size_bytes{job="Internal-archive-node-exporter"}) ) * 100 >= 90
+        for: 3m
+        labels:
+          severity: critical
+
+
+      # - alert: Archive-Server-Monitoring-ICMP-Responce-time-1.0
+      #   annotations:
+      #     description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "ICMP response time delay"
+      #   expr: |-
+      #     probe_duration_seconds{job="ICMP-Archive"} >= 1.0
+      #   for: 3m
+      #   labels:
+      #     severity: warning
+
+      # - alert: Archive-Server-Monitoring-ICMP-Responce-time-3.0
+      #   annotations:
+      #     description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "ICMP response time delay"
+      #   expr: |-
+      #     probe_duration_seconds{job="ICMP-Archive"} >= 3.0
+      #   for: 3m
+      #   labels:
+      #     severity: warning
+
+      # ### SSH
+      # - alert: Archive-Server-SSH-Check
+      #   annotations:
+      #     description: "Instance {{$labels.instance}} not connect"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "Archive Server SSH not connect"
+      #   expr: |-
+      #     probe_success{job="SSH-Archive"} == 0
+      #   for: 3m
+      #   labels:
+      #     severity: critical
+
+      # - alert: Archive-Server-Monitoring-SSH-Responce-time-1.0
+      #   annotations:
+      #     description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "SSH response time delay"
+      #   expr: |-
+      #     probe_duration_seconds{job="SSH-Archive"} >= 1.0
+      #   for: 3m
+      #   labels:
+      #     severity: warning
+
+      # - alert: Archive-Server-Monitoring-SSH-Responce-time-3.0
+      #   annotations:
+      #     description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "SSH response time delay"
+      #   expr: |-
+      #     probe_duration_seconds{job="SSH-Archive"} >= 3.0
+      #   for: 3m
+      #   labels:
+      #     severity: warning
+
+      
+### ここから増やす予定

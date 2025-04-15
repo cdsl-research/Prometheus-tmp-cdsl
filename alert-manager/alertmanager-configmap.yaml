@@ -7,7 +7,7 @@ data:
   config.yml: |-
     global:
       resolve_timeout: 1m
-      slack_api_url: https://hooks.slack.com/services/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
+      slack_api_url: https://hooks.slack.com/services/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
 
     inhibit_rules:
       - equal:
@@ -35,9 +35,9 @@ data:
 
     receivers:
       - name: "null"
-      - name: slack
+      - name: slack_internal
         slack_configs:
-          - channel: '#monitoring-cdsl-alert'
+          - channel: '#_alert_internal'
             send_resolved: true
             text: |-
               {{ range $index, $alert := .Alerts }}
@@ -55,6 +55,57 @@ data:
               ---------------------------
             title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 監視イベント通知'
 
+      - name: slack_external
+        slack_configs:
+          - channel: '#_alert_doktor'
+            send_resolved: true
+            text: |-
+              {{ range $index, $alert := .Alerts }}
+                ---------------------------
+                *アラート:* {{ $alert.Labels.alertname }}
+                *概要:* {{ if $alert.Annotations.summary }}{{ $alert.Annotations.summary }}{{ else }}概要なし{{ end }}
+                *ランブック:* {{ if $alert.Annotations.runbook_url }}{{ $alert.Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
+                *重大度:* {{ $alert.Labels.severity }}
+                *詳細情報:*
+                  • *alertname:* {{ $alert.Labels.alertname }}
+                  • *instance:* {{ if $alert.Labels.instance }}{{ $alert.Labels.instance }}{{ else }}N/A{{ end }}
+                  • *job:* {{ if $alert.Labels.job }}{{ $alert.Labels.job }}{{ else }}N/A{{ end }}
+                  • *description:* {{ if $alert.Annotations.description }}{{ $alert.Annotations.description }}{{ else }}説明なし{{ end }}
+              {{ end }}
+              ---------------------------
+            title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 監視イベント通知'
+        
+        opsgenie_configs:
+          - api_key: '79ed3d05-62fb-43aa-bba1-f5ef896d4d64'
+            send_resolved: true
+            priority: 'P3'
+            # priority: |-
+            #   {{ if eq .Alerts.Firing.severity "critical" }} P1
+            #   {{ else if eq .Alerts.Firing.severity "warning" }} P2
+            #   {{ else }} P3
+            #   {{ end }}
+
+      - name: slack_doktor_dev
+        slack_configs:
+          - channel: '#_alert_doktor_dev'
+            send_resolved: true
+            text: |-
+              {{ range $index, $alert := .Alerts }}
+                ---------------------------
+                *アラート:* {{ $alert.Labels.alertname }}
+                *概要:* {{ if $alert.Annotations.summary }}{{ $alert.Annotations.summary }}{{ else }}概要なし{{ end }}
+                *ランブック:* {{ if $alert.Annotations.runbook_url }}{{ $alert.Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
+                *重大度:* {{ $alert.Labels.severity }}
+                *詳細情報:*
+                  • *alertname:* {{ $alert.Labels.alertname }}
+                  • *instance:* {{ if $alert.Labels.instance }}{{ $alert.Labels.instance }}{{ else }}N/A{{ end }}
+                  • *job:* {{ if $alert.Labels.job }}{{ $alert.Labels.job }}{{ else }}N/A{{ end }}
+                  • *description:* {{ if $alert.Annotations.description }}{{ $alert.Annotations.description }}{{ else }}説明なし{{ end }}
+              {{ end }}
+              ---------------------------
+            title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 監視イベント通知'
+
+
     route:
       group_interval: 5m
       group_wait: 5m
@@ -62,10 +113,20 @@ data:
         - instance
         - alertname
       repeat_interval: 12h
-      receiver: "slack"
+      receiver: "slack_internal"
       routes:
         - match:
             alertname: DeadMansSwitch
           receiver: "null"
-        - receiver: slack
-          continue: true
+        - match_re:
+            alertname: "External.*"
+          receiver: slack_external
+          continue: false
+        - match_re:
+            alertname: "Internal.*"
+          receiver: slack_internal
+          continue: false
+        - match_re:
+            alertname: "Doktor Dev.*"
+          receiver: slack_doktor_dev
+          continue: false

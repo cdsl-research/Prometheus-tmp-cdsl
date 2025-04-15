@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: router-rule
+  namespace: monitoring
+data:
+  router-monitoring-rules.yml: |-
+    groups:
+    - name: Internal-Router-Check
+      rules:
+      ### ICMP
+      - alert: Internal Router ICMP Check
+        annotations:
+          description: "Instance {{$labels.instance}}"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "Router ICMP not connect"
+        expr: |-
+          probe_success{job="Internal-ICMP-Router"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      # - alert: Router-Monitoring-ICMP-Responce-time-1.0
+      #   annotations:
+      #     description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "ICMP response time delay"
+      #   expr: |-
+      #     probe_duration_seconds{job="ICMP-Router"} >= 1.0
+      #   for: 3m
+      #   labels:
+      #     severity: warning
+
+      # - alert: Router-Monitoring-ICMP-Responce-time-3.0
+      #   annotations:
+      #     description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "ICMP response time delay"
+      #   expr: |-
+      #     probe_duration_seconds{job="ICMP-Router"} >= 3.0
+      #   for: 3m
+      #   labels:
+      #     severity: warning 
+
+
