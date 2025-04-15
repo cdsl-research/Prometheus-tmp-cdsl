@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: esxi-rule-iris
+  namespace: monitoring
+data:
+  esxi-iris-monitoring-rules.yml: |-
+    groups:
+    - name: External-ESXi-Check
+      rules:
+      ### ICMP
+      - alert: External ESXi ICMP Check
+        annotations:
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://cdsl-tut.esa.io/posts/2795
+          summary: "ESXi ICMP not connect"
+        expr: |-
+          probe_success{job="External-ICMP-ESXi-Host"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      - alert: External DataStore Connection Unavailable
+        annotations:
+          description: "`Host: {{$labels.instance}}` Ds_name: `{{$labels.ds_name}}` Not Connection"
+          runbook_url: https://cdsl-tut.esa.io/posts/2795
+          summary:  "DataStore Not Connection"
+        expr: |-
+          vmware_datastore_accessible{job="External-ESXI_exporter", ds_name!="StoreNAS-Public"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      - alert: External HostMemoryUsageHigh-Usage95%
+        annotations:
+          description: "Host Name: `{{$labels.host_name}}` Memory Usage High"
+          runbook_url: https://cdsl-tut.esa.io/posts/2795
+          summary:  "Memory Usage High"
+        expr: |-
+          vmware_host_memory_usage{job="External-ESXI_exporter"} / vmware_host_memory_max{job="External-ESXI_exporter"} * 100 >= 95
+        for: 3m
+        labels:
+          severity: critical
+
+      - alert: External DataStoreDiskUsageHigh-Usage90%
+        annotations:
+          description: "Host Name: `{{$labels.instance}}`, Ds_name: `{{$labels.ds_name}}` Disk Usage High"
+          runbook_url: https://cdsl-tut.esa.io/posts/2795
+          summary:  "Disk Usage High"
+        expr: ((vmware_datastore_capacity_size{job="External-ESXI_exporter",ds_name="store-m2"} - vmware_datastore_freespace_size{job="External-ESXI_exporter",ds_name="store-m2"}) / vmware_datastore_capacity_size{job="External-ESXI_exporter",ds_name="store-m2"} * 100) >= 90
+        for: 3m
+        labels:
+          severity: critical

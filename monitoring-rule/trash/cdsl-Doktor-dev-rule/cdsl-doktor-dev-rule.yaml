@@ -1,144 +1,141 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: archive-server-rule
+  name: doktor-dev-server-rule
   namespace: monitoring
 data:
-  archive-server-monitoring-rules.yml: |-
+  doktor-dev-server-monitoring-rules.yml: |-
     ### Trafic
     groups:
-    - name: Archive-Server-Check
+    - name: Doktor-Node-Check
       rules:
       ### ICMP
-      - alert: Archive-Server-ICMP-Check
+      - alert: Doktor-Node-ICMP-Check
         annotations:
           description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
-          summary: "Archive Server ICMP not connect"
+          summary: "Doktor Server ICMP not connect"
         expr: |-
-          probe_success{job="ICMP-Archive"} == 0
+          probe_success{job="ICMP-Doktor-vev"} == 0
         for: 3m
         labels:
           severity: critical
 
-      - alert: Archive-Server-Monitoring-ICMP-Responce-time-1.0
+      - alert: Doktor-Node-ICMP-ResponceTime-1.0
         annotations:
           description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary: "ICMP response time delay"
         expr: |-
-          probe_duration_seconds{job="ICMP-Archive"} >= 1.0
+          probe_icmp_duration_seconds{job="ICMP-Doktor-vev"} >= 1.0
         for: 3m
         labels:
           severity: warning
 
-      - alert: Archive-Server-Monitoring-ICMP-Responce-time-3.0
+      - alert: Doktor-Node-ICMP-ResponceTime-3.0
         annotations:
           description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary: "ICMP response time delay"
         expr: |-
-          probe_duration_seconds{job="ICMP-Archive"} >= 3.0
+          probe_icmp_duration_seconds{job="ICMP-Doktor-vev"} >= 3.0
         for: 3m
         labels:
           severity: warning
-
+      
       ### SSH
-      - alert: Archive-Server-SSH-Check
+      - alert: Doktor-Node-SSH-Check
         annotations:
           description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
-          summary: "Archive Server SSH not connect"
+          summary: "Doktor Server SSH not connect"
         expr: |-
-          probe_success{job="SSH-Archive"} == 0
+          probe_success{job="SSH-Doktor-dev"} == 0
         for: 3m
         labels:
           severity: critical
 
-      - alert: Archive-Server-Monitoring-SSH-Responce-time-1.0
+      - alert: Doktor-Node-SSH-ResponceTime-1.0
         annotations:
           description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
-          summary: "SSH response time delay"
+          summary: "ICMP response time delay"
         expr: |-
-          probe_duration_seconds{job="SSH-Archive"} >= 1.0
+          probe_duration_seconds{job="SSH-Doktor-dev"} >= 1
         for: 3m
         labels:
           severity: warning
 
-      - alert: Archive-Server-Monitoring-SSH-Responce-time-3.0
+      - alert: Doktor-Node-SSH-ResponceTime-3.0
         annotations:
           description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
-          summary: "SSH response time delay"
+          summary: "ICMP response time delay"
         expr: |-
-          probe_duration_seconds{job="SSH-Archive"} >= 3.0
+          probe_duration_seconds{job="SSH-Doktor-dev"} >= 3
         for: 3m
         labels:
           severity: warning
 
-      ### Node単位
-      ## CPU
-      - alert: Archive-Server-CPU-High-Warning
+      ### CPU
+      - alert: Doktor-Node-CPU-Usage-High-Warning
         annotations:
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "CPU Usage high"
-        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="archive-node-exporter", mode!="idle"}[5m])) * 100 >= 80
+        expr: avg without (cpu) (rate(node_cpu_seconds_total{job="doktor-dev-node",mode!="idle"}[5m])) * 100 >= 80
         for: 3m
         labels:
           severity: warning
 
-      - alert: Archive-Server-CPU-High-Critical
+      - alert: Doktor-Node-CPU-Usage-High-Critical
         annotations:
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "CPU Usage high"
-        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="archive-node-exporter", mode!="idle"}[5m])) * 100 >= 90
+        expr: avg without (cpu) (rate(node_cpu_seconds_total{job="doktor-dev-node",mode!="idle"}[5m])) * 100 >= 90
         for: 3m
         labels:
           severity: critical
 
-      ##Memory
-      - alert: Archive-Server-Memory-High-Warning
+      ### Memory
+      - alert: Doktor-Node-Memory-Usage-High-Warning
         annotations:
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage high"
-        expr: (node_memory_MemTotal_bytes{job="archive-node-exporter"} - node_memory_MemAvailable_bytes{job="archive-node-exporter"}) / node_memory_MemTotal_bytes{job="archive-node-exporter"} * 100 >= 80
+        expr: (node_memory_MemTotal_bytes{job="doktor-dev-node"} - node_memory_MemAvailable_bytes{job="doktor-dev-node"}) / node_memory_MemTotal_bytes{job="doktor-dev-node"} * 100 >= 80
         for: 3m
         labels:
           severity: warning
 
-      - alert: Archive-Server-Memory-High-Critical
+      - alert: Doktor-Node-Memory-Usage-High-Critical
         annotations:
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage high"
-        expr: (node_memory_MemTotal_bytes{job="archive-node-exporter"} - node_memory_MemAvailable_bytes{job="archive-node-exporter"}) / node_memory_MemTotal_bytes{job="archive-node-exporter"} * 100 >= 90
+        expr: (node_memory_MemTotal_bytes{job="doktor-dev-node"} - node_memory_MemAvailable_bytes{job="doktor-dev-node"}) / node_memory_MemTotal_bytes{job="doktor-dev-node"} * 100 >= 90
         for: 3m
         labels:
           severity: critical
 
-      ## Filesystem Storege
-      - alert: Archive-Server-Filesystem-Storege-High-Warning
+      ###Disk(File system)
+      - alert: Doktor-Node-Filesystem-Usage-High-Warning
         annotations:
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Filesystem Usage high"
-        expr: (1 - (node_filesystem_avail_bytes{job="archive-node-exporter"} / node_filesystem_size_bytes{job="archive-node-exporter"}) ) * 100 >= 80
+        expr: (1 - (node_filesystem_avail_bytes{job="doktor-dev-node",mountpoint="/etc/hostname"} / node_filesystem_size_bytes{job="doktor-dev-node",mountpoint="/etc/hostname"})) * 100 >= 80 
         for: 3m
         labels:
           severity: warning
 
-      - alert: Archive-Server-Filesystem-Storege-High-Critical
+      - alert: Doktor-Node-Filesystem-Usage-High-Critical
         annotations:
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Filesystem Usage high"
-        expr: (1 - (node_filesystem_avail_bytes{job="archive-node-exporter"} / node_filesystem_size_bytes{job="archive-node-exporter"}) ) * 100 >= 90
+        expr: (1 - (node_filesystem_avail_bytes{job="doktor-dev-node",mountpoint="/etc/hostname"} / node_filesystem_size_bytes{job="doktor-dev-node",mountpoint="/etc/hostname"})) * 100 >= 90
         for: 3m
         labels:
           severity: critical
-
-### ここから増やす予定

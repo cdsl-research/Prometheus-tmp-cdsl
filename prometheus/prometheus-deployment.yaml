@@ -6,7 +6,7 @@ metadata:
   labels:
     app: prometheus
 spec:
-  replicas: 1 
+  replicas: 1
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,12 +23,19 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+      initContainers:
+      - name: init-chown-data
+        image: busybox
+        command: ["chown", "-R", "65534:65534", "/prometheus"]
+        volumeMounts:
+        - name: data
+          mountPath: /prometheus
       containers:
       - name: prometheus
         image: quay.io/prometheus/prometheus:v2.53.1
         imagePullPolicy: IfNotPresent
         args:
-          - '--storage.tsdb.retention=6h'
+          - '--storage.tsdb.retention=31d'
           - '--storage.tsdb.path=/prometheus'
           - '--config.file=/etc/prometheus/prometheus.yml'
         ports:
@@ -47,7 +54,8 @@ spec:
         configMap:
           name: prometheus-config
       - name: data
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: prometheus-pvc
       - name: rules-volume
         projected:
           sources:
@@ -56,14 +64,22 @@ spec:
           - configMap:
               name: swich-rule
           - configMap:
-              name: firewall-rule 
+              name: firewall-rule
           - configMap:
-              name: nas-rule   
+              name: nas-rule
           - configMap:
-              name: esxi-rule 
+              name: esxi-rule
           - configMap:
-              name: archive-server-rule  
+              name: archive-server-rule
           - configMap:
-              name: openvpn-rule 
+              name: openvpn-rule
           - configMap:
               name: core-server-rule
+          - configMap:
+              name: doktor-prob-server-rule
+          - configMap:
+              name: esxi-rule-iris
+          - configMap:
+              name: doktor-dev-server-rule
+          - configMap:
+              name: esxi-backup-rule

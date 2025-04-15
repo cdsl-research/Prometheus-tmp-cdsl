@@ -51,28 +51,6 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/grafana
               name: grafana-pv
-#変更した点
-          env:
-            - name: GF_RENDERING_SERVER_URL
-              value: "http://renderer:8081/render"  # rendererコンテナのURL
-            - name: GF_RENDERING_CALLBACK_URL
-              value: "http://grafana:3000/"  # GrafanaのURL
-            - name: GF_LOG_FILTERS
-              value: rendering:debug
-        - name: renderer
-          image: grafana/grafana-image-renderer:latest  # Image Rendererコンテナ
-          ports:
-            - containerPort: 8081  # デフォルトのポート
-          resources:
-            limits:
-              memory: 2Gi
-              cpu: 2000m
-          env:
-            - name: XDG_CONFIG_HOME
-              value: "/tmp/.chromium"
-            - name: XDG_CACHE_HOME
-              value: "/tmp/.chromium"
-
       volumes:
         - name: grafana-pv
           persistentVolumeClaim:
@@ -93,20 +71,3 @@ spec:
     app: grafana
   sessionAffinity: None
   type: NodePort
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: renderer
-  namespace: grafana
-spec:
-  selector:
-    app: grafana
-  ports:
-    - name: renderer
-      protocol: TCP
-      port: 8081
-      targetPort: 8081
-  type: ClusterIP
-

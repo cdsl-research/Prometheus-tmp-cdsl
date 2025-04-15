@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openvpn-rule
+  namespace: monitoring
+data:
+  openvpn-monitoring-rules.yml: |-
+    groups:
+    - name: External-Openvpn-Check
+      rules:
+      ### ICMP
+      - alert: External Openvpn ICMP Check
+        annotations:
+          description: "Instance {{$labels.instance}}"
+          runbook_url: https://cdsl-tut.esa.io/posts/2795
+          summary: "Openvpn ICMP not connect"
+        expr: |-
+          probe_success{job="External-ICMP-OpenVPN"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+      # - alert: Openvpn-Monitoring-ICMP-Responce-time-1.0
+      #   annotations:
+      #     description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+      #     runbook_url: https://cdsl-tut.esa.io/posts/2795
+      #     summary: "ICMP response time delay"
+      #   expr: |-
+      #     probe_duration_seconds{job="ICMP-OpenVPN"} >= 1.0
+      #   for: 3m
+      #   labels:
+      #     severity: warning
+
+      # - alert: Openvpn-Monitoring-ICMP-Responce-time-3.0
+      #   annotations:
+      #     description: "job {{$labels.job}} Instance {{$labels.instance}} response-time-delay"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "ICMP response time delay"
+      #   expr: |-
+      #     probe_duration_seconds{job="ICMP-OpenVPN"} >= 3.0
+      #   for: 3m
+      #   labels:
+      #     severity: warning
+
+      
+
+

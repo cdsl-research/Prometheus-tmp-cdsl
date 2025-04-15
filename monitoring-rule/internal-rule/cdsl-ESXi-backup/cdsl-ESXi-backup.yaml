@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: esxi-backup-rule
+  namespace: monitoring
+data:
+  esxi-backup-monitoring-rules.yml: |-
+    groups:
+    - name: Internal-ESXi-backup-Check
+      rules:
+      ### ICMP
+      - alert: Internal ESXi backup ICMP-Check
+        annotations:
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi backup ICMP not connect"
+        expr: |-
+          probe_success{job="Internal-esxi-backup-ICMP"} == 0
+        for: 1m
+        labels:
+          severity: critical
+
+      ### SSH
+      - alert: Internal ESXi backup SSH-Check
+        annotations:
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi-backup SSH not connect"
+        expr: |-
+          probe_success{job="Internal-esxi-backup-SSH"} == 0
+        for: 3m
+        labels:
+          severity: critical
+
+            ### Node単位
+      ## CPU
+      - alert: Internal ESXi backup CPU-High 80%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "CPU Usage high"
+        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="Internal-esxi-backup-node-exporter", mode!="idle"}[5m])) * 100 >= 80
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: Internal ESXi backup CPU-High 90%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "CPU Usage high"
+        expr: avg without(cpu) (rate(node_cpu_seconds_total{job="Internal-esxi-backup-node-exporter", mode!="idle"}[5m])) * 100 >= 90
+        for: 3m
+        labels:
+          severity: critical
+
+      ##Memory
+      - alert: Internal ESXi backup Memory High 80%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Memory Usage high"
+        expr: (node_memory_MemTotal_bytes{job="Internal-esxi-backup-node-exporter"} - node_memory_MemAvailable_bytes{job="Internal-esxi-backup-node-exporter"}) / node_memory_MemTotal_bytes{job="Internal-esxi-backup-node-exporter"} * 100 >= 80
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: Internal ESXi backup Memory High 90%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Memory Usage high"
+        expr: (node_memory_MemTotal_bytes{job="Internal-esxi-backup-node-exporter"} - node_memory_MemAvailable_bytes{job="Internal-esxi-backup-node-exporter"}) / node_memory_MemTotal_bytes{job="Internal-esxi-backup-node-exporter"} * 100 >= 90
+        for: 3m
+        labels:
+          severity: critical
+
+      ## Filesystem Storege
+      - alert: Internal ESXi backup Filesystem Storege High 80%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Filesystem Usage high"
+        expr: (1 - (node_filesystem_avail_bytes{job="Internal-esxi-backup-node-exporter"} / node_filesystem_size_bytes{job="Internal-esxi-backup-node-exporter"}) ) * 100 >= 80
+        for: 3m
+        labels:
+          severity: warning
+
+      - alert: Internal ESXi backup Filesystem Storege High 90%
+        annotations:
+          description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary:  "Filesystem Usage high"
+        expr: (1 - (node_filesystem_avail_bytes{job="Internal-esxi-backup-node-exporter"} / node_filesystem_size_bytes{job="Internal-esxi-backup-node-exporter"}) ) * 100 >= 90
+        for: 3m
+        labels:
+          severity: critical
