@@ -109,3 +109,33 @@ data:
   VSPHERE_COLLECT_HOSTS: "True"
   VSPHERE_COLLECT_DATASTORES: "True"
   VSPHERE_COLLECT_VMS: "True"
+---
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config-makaron
+apiVersion: v1
+data:
+  VSPHERE_USER: "monitoring"
+  VSPHERE_HOST: "192.168.100.32" #makaron
+  VSPHERE_IGNORE_SSL: "True"
+  VSPHERE_COLLECT_HOSTS: "True"
+  VSPHERE_COLLECT_DATASTORES: "True"
+  VSPHERE_COLLECT_VMS: "True"
+---
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config-canele
+apiVersion: v1
+data:
+  VSPHERE_USER: "monitoring"
+  VSPHERE_HOST: "192.168.100.33" #canale
+  VSPHERE_IGNORE_SSL: "True"
+  VSPHERE_COLLECT_HOSTS: "True"
+  VSPHERE_COLLECT_DATASTORES: "True"
+  VSPHERE_COLLECT_VMS: "True"
+
+

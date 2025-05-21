@@ -8,19 +8,93 @@ data:
     groups:
     - name: Internal-ESXi-Check
       rules:
-      - alert: Internal ESXi ICMP Check
+        #- alert: Internal ESXi ICMP Check
+        #annotations:
+        #alert_title: "Internal {{ $labels.instance }} ICMP Check"
+        #description: "Instance {{$labels.instance}} not connect"
+        #runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+        #summary: "ESXi ICMP not connect"
+        #expr: |-
+        #probe_success{job="Internal-ICMP-ESXi-Host"} == 0 and switchbot_power_status{job="switchbot"} == 1
+        #for: 30m
+        #labels:
+        #severity: critical
+
+      - alert: Test plum ICMP Check
         annotations:
+          alert_title: "{{ $labels.instance }} ICMP not connect but Switchbot {{ $labels.device_name }} up"
           description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary: "ESXi ICMP not connect"
         expr: |-
-          probe_success{job="Internal-ICMP-ESXi-Host"} == 0
-        for: 1d
+          switchbot_power_status{device_name="plum"} == 1 and on() probe_success{instance="plum"} == 0
+        for: 30m
+        labels:
+          severity: critical
+
+      - alert: Test jasmine ICMP Check
+        annotations:
+          alert_title: "{{ $labels.instance }} ICMP not connect but Switchbot {{ $labels.device_name }} up"
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi ICMP not connect"
+        expr: |-
+          switchbot_power_status{device_name="jasmine"} == 1 and on() probe_success{instance="jasmine"} == 0
+        for: 30m
+        labels:
+          severity: critical
+
+      - alert: Test rose ICMP Check
+        annotations:
+          alert_title: "{{ $labels.instance }} ICMP not connect but Switchbot {{ $labels.device_name }} up"
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi ICMP not connect"
+        expr: |-
+          switchbot_power_status{device_name="rose"} == 1 and on() probe_success{instance="rose"} == 0
+        for: 30m
+        labels:
+          severity: critical
+
+      - alert: Test lotus ICMP Check
+        annotations:
+          alert_title: "{{ $labels.instance }} ICMP not connect but Switchbot {{ $labels.device_name }} up"
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi ICMP not connect"
+        expr: |-
+          switchbot_power_status{device_name="lotus"} == 1 and on() probe_success{instance="lotus"} == 0
+        for: 30m
+        labels:
+          severity: critical
+
+      - alert: Test violet ICMP Check
+        annotations:
+          alert_title: "{{ $labels.instance }} ICMP not connect but Switchbot {{ $labels.device_name }} up"
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi ICMP not connect"
+        expr: |-
+          switchbot_power_status{device_name="violet"} == 1 and on() probe_success{instance="violet"} == 0
+        for: 30m
+        labels:
+          severity: critical
+
+      - alert: Test mint ICMP Check
+        annotations:
+          alert_title: "{{ $labels.instance }} ICMP not connect but Switchbot {{ $labels.device_name }} up"
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi ICMP not connect"
+        expr: |-
+          switchbot_power_status{device_name="mint"} == 1 and on() probe_success{instance="mint"} == 0
+        for: 30m
         labels:
           severity: critical
 
       - alert: Internal DataStore Connection Unavailable
         annotations:
+          alert_title: "DS {{ $labels.ds_name }} Connection Unavailable"
           description: "`Host: {{$labels.instance}}` Ds_name: `{{$labels.ds_name}}` Not Connection"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "DataStore Not Connection"
@@ -30,19 +104,21 @@ data:
         labels:
           severity: critical
 
-      - alert: Internal HostMemoryUsageHigh-Usage95%
+      - alert: Internal HostMemoryUsageHigh-Usage90%
         annotations:
+          alert_title: "{{$labels.host_name}} MemoryUsageHigh-Usage90%"
           description: "Host Name: `{{$labels.host_name}}` Memory Usage 95%"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage High"
         expr: |-
-          vmware_host_memory_usage{job="Internal-ESXI_exporter"} / vmware_host_memory_max{job="Internal-ESXI_exporter"} * 100 >= 95
+          vmware_host_memory_usage{job="Internal-ESXI_exporter"} / vmware_host_memory_max{job="Internal-ESXI_exporter"} * 100 >= 90
         for: 3m
         labels:
           severity: critical
 
       - alert: Internal DataStoreDiskUsageHigh-Usage 90%
         annotations:
+          alert_title: "DataStore {{$labels.ds_name}} DiskUsageHigh-Usage 90%"
           description: "Host Name: `{{$labels.instance}}`, Ds_name: `{{$labels.ds_name}}` Disk Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Disk Usage High"

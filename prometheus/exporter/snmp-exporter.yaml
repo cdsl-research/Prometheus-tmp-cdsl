@@ -1,16 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: snmp-exporter-clusterip
+  name: snmp-exporter-nodeport
   namespace: monitoring
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: snmp-exporter-app
   ports:
     - name: snmp-exporter-port
       port: 9116
       targetPort: 9116
+      nodePort: 31100
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -118,3 +119,6 @@ data:
       auth:
         community: public
 
+#佐藤が追記
+    #nas:
+      #walk:

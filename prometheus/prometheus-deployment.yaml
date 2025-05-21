@@ -83,3 +83,7 @@ spec:
               name: doktor-dev-server-rule
           - configMap:
               name: esxi-backup-rule
+          - configMap:
+              name: lidar-server-rule 
+          - configMap:
+              name: monitoring-cluster-rule

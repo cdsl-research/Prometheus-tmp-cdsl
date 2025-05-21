@@ -6,16 +6,17 @@ metadata:
 data:
   swich-monitoring-rules.yml: |-
     groups:
-    - name: Internal-Swich-Check
+    - name: Internal-Switch-Check
       rules:
       ### ICMP
-      - alert: Internal Swich ICMP Check
+      - alert: Internal Switch ICMP Check
         annotations:
-          description: "Instance {{$labels.instance}}"
+          alert_title: "Internal {{$labels.instance}} ICMP Check"
+          description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
-          summary: "Swich ICMP not connect"
+          summary: "Switch ICMP not connect"
         expr: |-
-          probe_success{job="Internal-ICMP-Swich"} == 0
+          probe_success{job="Internal-ICMP-Switch"} == 0
         for: 3m
         labels:
           severity: critical

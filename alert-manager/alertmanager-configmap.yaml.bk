@@ -42,7 +42,7 @@ data:
             text: |-
               {{ range $index, $alert := .Alerts }}
                 ---------------------------
-                *アラート:* {{ $alert.Annotations.alert_title }}
+                *アラート:* {{ $alert.Labels.alertname }} 
                 *概要:* {{ if $alert.Annotations.summary }}{{ $alert.Annotations.summary }}{{ else }}概要なし{{ end }}
                 *ランブック:* {{ if $alert.Annotations.runbook_url }}{{ $alert.Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
                 *重大度:* {{ $alert.Labels.severity }}
@@ -62,7 +62,7 @@ data:
             text: |-
               {{ range $index, $alert := .Alerts }}
                 ---------------------------
-                *アラート:* {{ $alert.Annotations.alert_title }}
+                *アラート:* {{ $alert.Labels.alertname }}
                 *概要:* {{ if $alert.Annotations.summary }}{{ $alert.Annotations.summary }}{{ else }}概要なし{{ end }}
                 *ランブック:* {{ if $alert.Annotations.runbook_url }}{{ $alert.Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
                 *重大度:* {{ $alert.Labels.severity }}
@@ -75,10 +75,15 @@ data:
               ---------------------------
             title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 監視イベント通知'
         
-              #opsgenie_configs:
-              # - api_key: '79ed3d05-62fb-43aa-bba1-f5ef896d4d64'
-              #send_resolved: true
-              #priority: 'P3'
+        opsgenie_configs:
+          - api_key: '79ed3d05-62fb-43aa-bba1-f5ef896d4d64'
+            send_resolved: true
+            priority: 'P3'
+            # priority: |-
+            #   {{ if eq .Alerts.Firing.severity "critical" }} P1
+            #   {{ else if eq .Alerts.Firing.severity "warning" }} P2
+            #   {{ else }} P3
+            #   {{ end }}
 
       - name: slack_doktor_dev
         slack_configs:
@@ -87,7 +92,7 @@ data:
             text: |-
               {{ range $index, $alert := .Alerts }}
                 ---------------------------
-                *アラート:* {{ $alert.Annotations.alert_title }}
+                *アラート:* {{ $alert.Labels.alertname }}
                 *概要:* {{ if $alert.Annotations.summary }}{{ $alert.Annotations.summary }}{{ else }}概要なし{{ end }}
                 *ランブック:* {{ if $alert.Annotations.runbook_url }}{{ $alert.Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
                 *重大度:* {{ $alert.Labels.severity }}
@@ -99,31 +104,12 @@ data:
               {{ end }}
               ---------------------------
             title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 監視イベント通知'
-        
-      - name: slack_test
-        slack_configs:
-          - channel: '#_alert_test'
-            send_resolved: true
-            text: |-
-              {{ range $index, $alert := .Alerts }}
-                ---------------------------
-                *アラート:* {{ $alert.Annotations.alert_title }}
-                *概要:* {{ if $alert.Annotations.summary }}{{ $alert.Annotations.summary }}{{ else }}概要なし{{ end }}
-                *ランブック:* {{ if $alert.Annotations.runbook_url }}{{ $alert.Annotations.runbook_url }}{{ else }}https://github.com/prometheus-operator/runbooks/{{ end }}
-                *重大度:* {{ $alert.Labels.severity }}
-                *詳細情報:*
-                  • *alertname:* {{ $alert.Labels.alertname }}
-                  • *instance:* {{ if $alert.Labels.instance }}{{ $alert.Labels.instance }}{{ else }}N/A{{ end }}
-                  • *job:* {{ if $alert.Labels.job }}{{ $alert.Labels.job }}{{ else }}N/A{{ end }}
-                  • *description:* {{ if $alert.Annotations.description }}{{ $alert.Annotations.description }}{{ else }}説明なし{{ end }}
-              {{ end }}
-              ---------------------------
-            title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 監視イベント通知'
-
+      
       - name: 'redmine'
         webhook_configs:
-          - url: 'http://monitoring-master-ml:32400/alert'
-            send_resolved: false
+          - url: 'http://monitoring-master-ml:8000/alert'  # FlaskのService名とポートに変更
+            send_resolved: true
+
 
     route:
       group_interval: 5m
@@ -134,8 +120,6 @@ data:
       repeat_interval: 6h
       receiver: "redmine"
       routes:
-        - receiver: "redmine"
-          continue: true
         - match:
             alertname: DeadMansSwitch
           receiver: "null"
@@ -151,8 +135,3 @@ data:
             alertname: "Doktor Dev.*"
           receiver: slack_doktor_dev
           continue: true
-        - match_re:
-            alertname: "Test.*"
-          receiver: slack_test
-          continue: true
-
