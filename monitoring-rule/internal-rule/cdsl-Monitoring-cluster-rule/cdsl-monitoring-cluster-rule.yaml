@@ -1,0 +1,261 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-cluster-rule
+  namespace: monitoring
+data:
+  monitoring-cluster.yml: |-
+    groups:
+    - name: Internal-Monitoring-Cluster-Check
+      rules:
+        # Pod単位
+      - alert: Internal Monitoring Cluster Abnormal pod status
+        annotations: 
+          alert_title: "Monitoring Cluster Abnormal Pod Detected: {{ $labels.namespace }}/{{ $labels.pod }} - {{ $labels.phase }}"
+          description: "Namespace: {{ $labels.namespace }} Pod: {{ $labels.pod }} status: {{ $labels.phase }}"
+          runbook_url: https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/support/pod-troubleshooting#task-2187029
+          summary: "Abnormal pod status"
+        expr: |-
+          min_over_time(sum by (namespace, pod, phase) (kube_pod_status_phase{phase=~"Failed|Pending|Unknown|Failed"})[5m:1m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+
+      - alert: Internal Monitoring Cluster Pod launch failures
+        annotations:
+          alert_title: "Monitoring Cluster Pod restart count 3 more: {{ $labels.namespace }}/{{ $labels.pod }}"
+          description: "Pod restart count 3 more: {{ $labels.namespace }}/{{ $labels.pod }}" 
+          runbook_url: https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/support/pod-troubleshooting#task-2187029
+          summary: "Pod restart count 3 more: {{ $labels.namespace }}/{{ $labels.pod }}"
+        expr: |-
+          sum_over_time(increase(kube_pod_container_status_restarts_total{}[1m])[5m:1m]) > 3
+        for: 5m
+        labels:
+          severity: critical
+
+      - alert: Internal MonitoringClusterCPUUsageHigh #今後改善予定
+        annotations:
+          alert_title: "Monitoring Cluster Pod CPU usage > 90%: {{ $labels.namespace }}/{{ $labels.pod }}"
+          description: "CPU usage exceeds 90%: {{ $labels.namespace }}/{{ $labels.pod }}"
+          runbook_url: https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/cpu-burst#task-2158239 
+          summary: "Pod {{ $labels.pod }} CPU usage is over 90%"
+        expr: |
+          100 * sum by(pod, namespace) (rate(container_cpu_usage_seconds_total{image!=""}[5m])) 
+          / 
+          clamp_min(sum by(pod, namespace) (container_spec_cpu_quota / container_spec_cpu_period), 0.001)
+          >= 90
+        for: 5m
+        labels:
+          severity: warning
+
+      - alert: Test MonitoringClusterMemoryUsageHigh
+        annotations:
+          alert_title: "Monitoring Cluster Pod Memory usage > 90%: {{ $labels.namespace }}/{{ $labels.pod }}"
+          description: "Memory usage exceeds 90%: {{ $labels.namespace }}/{{ $labels.pod }}"
+          runbook_url: https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/resource-profiling#task-2192631
+          summary: "Pod {{ $labels.pod }} memory usage is over 90%"
+        expr: |
+          (sum by(pod, namespace) (container_memory_usage_bytes{image!=""}) / sum by(pod, namespace) (container_spec_memory_limit_bytes{image!=""} > 0)) * 100 > 90
+        for: 1m
+        labels:
+          severity: warning
+
+
+      - alert: Internal Monitoring Cluster Pod oom check
+        annotations:
+          alert_title: "Monitoring Cluster Pod oom-kill: {{ $labels.namespace }}/{{ $labels.container }}-{{ $labels.kubernetes_io_hostname }}"
+          description: "Pod oom-kill: {{ $labels.namespace }}/{{ $labels.container }}-{{ $labels.kubernetes_io_hostname }}"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "container {{ $labels.container }} oom-kill"
+        expr: |-
+          increase(container_oom_events_total[1m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+
+      - alert: Internal Monitoring Cluster PV anomalies
+        annotations:
+          alert_title: "Monitoring Cluster PV: {{ $labels.persistentvolume }} Status: {{ $labels.phase }}"
+          description: "PV: {{ $labels.persistentvolume }} Status: {{ $labels.phase }}"
+          runbook_url: https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/faq-about-disk-volumes#task-2100599
+          summary: "PV anomalies"
+        expr: |-
+          kube_persistentvolume_status_phase{phase=~"Failed|Pending"} > 0
+        for: 1m
+        labels:
+          severity: critical
+
+      # Monitoring system上にあるRedmineのHTTPの監視
+      - alert: InternalRedmineHTTPNotConnect
+        expr: probe_success{instance="http://monitoring-master-ml:32300/"} == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          alert_title: "Redmine HTTP not connect {{ $labels.instance }}"
+          description: "Redmine HTTP not connect: check URL → {{ $labels.instance }}"
+          runbook_url: https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/faq-about-disk-volumes#task-2100599
+          summary: "Redmine HTTP not connect"
+
+      - alert: InternalRedmineHTTPStatusCodeError
+        expr: probe_http_status_code{instance="http://monitoring-master-ml:32300/"} >= 400
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          alert_title: "Redmine HTTP error {{ $labels.instance }}"
+          description: "Redmine HTTP error: check URL → {{ $labels.instance }}"
+          runbook_url: https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/faq-about-disk-volumes#task-2100599
+          summary: "Redmine HTTP error"
+
+
+
+# これいらないと思うから抜きます．
+          # - alert: Internal Over 1,000 pending pods
+          #   annotations:
+          #     alert_title: "Internal {{ $labels.container }} Over 1,000 pending pods"
+          #     description: |-
+          #       This rule triggers alerts if the number of pending pods exceeds 1,000 within the last 5 minutes.
+          #     runbook_url: |-
+          #       This issue occurs because the specifications of the cluster cannot meet the requirements for scheduling more than 1,000 pods. ACK Pro clusters provide enhanced capabilities for scheduling pods and are covered by SLAs. We recommend that you upgrade the cluster to an ACK Pro cluster. For more information, see https://www.alibabacloud.com/help/en/ack/overview-of-ack-pro-clusters#concept-2558837.
+          #     summary: "container {{ $labels.container }} Over 1,000 pending pods"
+          #   expr: |-
+          #     sum(sum(max_over_time(kube_pod_status_phase{ phase=~"Pending"}[5m])) by (pod)) > 1000
+          #   for: 1m
+          #   labels:
+          #     severity: critical
+          
+          # これもあっても対応しなさそうなのでなし
+          # - alert: Internal Frequent CPU throttling
+          #   annotations:
+          #     alert_title: "Internal {{ $labels.container }} Frequent CPU throttling"
+          #     description: |-
+          #       CPU throttling is frequently enforced on pods. This rule triggers alerts if the percentage of throttled CPU time slices within the last 3 minutes exceeds 25%.
+          #     runbook_url: |-
+          #       CPU throttling limits the CPU time slices that the processes in pods can use. This reduces the uptime of processes in the pods and may slow down the processes in the pods.
+          #       If this issue occurs, check whether the CPU limit of the pod is set to a small value. To resolve this issue, we recommend that you enable CPU Burst. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/cpu-burst#task-2158239. If you cluster contains multi-core ECS instances, we recommend that you enable topology-aware CPU scheduling to maximize the utilization of CPU fragments. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/topology-aware-cpu-scheduling#task-1935079.
+          #     summary: "container {{ $labels.container }} Frequent CPU throttling"
+          #   expr: |-
+          #     rate(container_cpu_cfs_throttled_seconds_total[3m]) * 100 > 25
+          #   for: 1m
+          #   labels:
+          #     severity: warning
+
+          # - alert: Internal CPU usage of pods higher than 80% #これは今後改善予定
+          #   annotations:
+          #     alert_title: "CPU usage 80% more: {{ $labels.namespace }}/{{ $labels.pod }}"
+          #     description: CPU usage 80% more: {{ $labels.namespace }}/{{ $labels.pod }}
+          #     runbook_url: https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/cpu-burst#task-2158239 
+          #     summary: "container {{ $labels.container }} CPU usage of pods higher than 80%"
+          #   expr: |-
+          #     100 * sum by(pod, namespace) (rate(container_cpu_usage_seconds_total{image!=""}[5m])) / sum by(pod, namespace) (container_spec_cpu_quota / container_spec_cpu_period) >= 80
+          #   for: 1m
+          #   labels:
+          #     severity: warning
+#これ微妙なのでなし
+      # - alert: Internal Deployment pod anomalies
+      #   annotations:
+      #     alert_title: "Internal {{ $labels.container }} Deployment pod anomalies"
+      #     description: |-
+      #       This rule triggers alerts if the number of replicated pods created by a Deployment is less than the specified value.
+      #       In the portal, click Alert Rule Set for Workload Exceptions and set the Deployment pod anomaly alert rule. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/alert-management#task-2056339.
+      #     runbook_url: |-
+      #       Check whether pods that are provisioned by Deployments fail to be launched.
+      #       If the pods fail to be launched or are in an abnormal state, troubleshoot the pods. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/support/pod-troubleshooting#task-2187029.
+      #       If the pods fail to be launched or are in an abnormal state, submit a ticket(http://monitoring-master-ml:32300/), provide the cluster ID, and describe the issue to the technical support.
+      #     summary: "container {{ $labels.container }} Deployment pod anomalies"
+      #   expr: |-
+      #     kube_deployment_spec_replicas{} != kube_deployment_status_replicas_available{}
+      #   for: 1m
+      #   labels:
+      #     severity: critical
+      #これも微妙
+      # - alert: Internal DaemonSet pod anomaly
+      #   annotations:
+      #     alert_title: "Internal {{ $labels.container }} DaemonSet pod anomaly"
+      #     description: |-
+      #       This rule triggers alerts if the number of replicated pods created by a DaemonSet is less than the specified value.
+      #       In the portal, click Alert Rule Set for Workload Exceptions and set the DaemonSet pod anomaly alert rule. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/alert-management#task-2056339.
+      #     runbook_url: |-
+      #       Check whether pods that are provisioned by DaemonSets fail to be launched.
+      #       If the pods fail to be launched or are in an abnormal state, troubleshoot the pods. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/support/pod-troubleshooting#task-2187029.
+      #       If the pods fail to be launched or are in an abnormal state, submit a ticket(http://monitoring-master-ml:32300/), provide the cluster ID, and describe the issue to the technical support.
+      #     summary: "container {{ $labels.container }} DaemonSet pod anomaly"
+      #   expr: |-
+      #     ((100 - kube_daemonset_status_number_ready{} / kube_daemonset_status_desired_number_scheduled{} * 100) or (kube_daemonset_status_desired_number_scheduled{} - kube_daemonset_status_current_number_scheduled{})) > 0
+      #   for: 1m
+      #   labels:
+      #     severity: critical
+      #これも微妙
+      # - alert: Internal DaemonSet pod scheduling errors
+      #   annotations:
+      #     alert_title: "Internal {{ $labels.container }} DaemonSet pod scheduling errors"
+      #     description: |-
+      #       This rule triggers alerts if scheduling errors occur on the pods that are provisioned by a DaemonSet.
+      #       In the portal, click Alert Rule Set for Workload Exceptions and set the DaemonSet pod scheduling errors alert rule. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/alert-management#task-2056339.
+      #     runbook_url: |-
+      #       Check whether pods that are provisioned by DaemonSets fail to be launched.
+      #       If the pods fail to be launched or are in an abnormal state, troubleshoot the pods. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/support/pod-troubleshooting#task-2187029.
+      #       If the pods fail to be launched or are in an abnormal state, submit a ticket(http://monitoring-master-ml:32300/), provide the cluster ID, and describe the issue to the technical support.
+      #     summary: "container {{ $labels.container }} DaemonSet pod scheduling errors"
+      #   expr: |-
+      #     kube_daemonset_status_number_misscheduled{} > 0
+      #   for: 1m
+      #   labels:
+      #     severity: critical
+
+      # - alert: Internal Job execution failures
+      #   annotations:
+      #     alert_title: "Internal {{ $labels.container }} Job execution failures"
+      #     description: |-
+      #       This rule triggers alerts if a Job fails.
+      #       In the portal, click Alert Rule Set for Workload Exceptions and set the Job execution failures alert rule. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/alert-management#task-2056339.
+      #     runbook_url: |-
+      #       Check whether pods that are provisioned by DaemonSets fail to be launched.
+      #       If the pods fail to be launched or are in an abnormal state, troubleshoot the pods. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/support/pod-troubleshooting#task-2187029.
+      #       If the pods fail to be launched or are in an abnormal state, submit a ticket(http://monitoring-master-ml:32300/), provide the cluster ID, and describe the issue to the technical support.
+      #     summary: "container {{ $labels.container }} Job execution failures"
+      #   expr: |-
+      #     kube_job_status_failed{} > 0
+      #   for: 1m
+      #   labels:
+      #     severity: critical
+# - alert: Internal Disk space less than 10%
+      #   annotations:
+      #     alert_title: "Internal {{ $labels.container }} Disk space less than 10%"
+      #     description: |-
+      #       This rule triggers alerts if the free space of a disk is less than 10%.
+      #       In the portal, click Alert Rule Set for Workload Exceptions and set the Node - Disk usage ≥ 85% alert rule. For more information, see https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/alert-management#task-2056339.
+      #     runbook_url: |-
+      #       Add nodes and disks. For more information, see the disk mounting section in https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/faq-about-disk-volumes#task-2100599.
+      #     summary: "container {{ $labels.container }} Disk space less than 10%"
+      #   expr: |-
+      #     ((node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes) < 10
+      #   for: 1m
+      #   labels:
+      #     severity: critical
+
+
+      # - alert: Internal redmine memory check
+      #   annotations:
+      #     alert_title: "Internal {{ $labels.container }} memory usage 90% high"
+      #     description: "container {{ $labels.container }} memory usage 90% high"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "container memory usage high"
+      #   expr: |-
+      #     (container_memory_usage_bytes{container="my-redmine"} / container_spec_memory_limit_bytes{container="my-redmine"}) * 100 >= 90
+      #   for: 1m
+      #   labels:
+      #     severity: critical
+
+      # - alert: Internal redmine oom check
+      #   annotations:
+      #     alert_title: "Internal {{ $labels.container }} oom-kill"
+      #     description: "container {{ $labels.container }} oom-kill"
+      #     runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+      #     summary: "container {{ $labels.container }} oom-kill"
+      #   expr: |-
+      #     increase(container_oom_events_total{container="my-redmine"}[1h]) > 0
+      #   for: 1m
+      #   labels:
+      #     severity: critical

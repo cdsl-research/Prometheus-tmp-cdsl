@@ -11,6 +11,7 @@ data:
       ### ICMP
       - alert: Internal ESXi backup ICMP-Check
         annotations:
+          alert_title: "Internal {{ $labels.instance }} ICMP Check"
           description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary: "ESXi backup ICMP not connect"
@@ -23,6 +24,7 @@ data:
       ### SSH
       - alert: Internal ESXi backup SSH-Check
         annotations:
+          alert_title: "Internal {{ $labels.instance }} SSH Check"
           description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary: "ESXi-backup SSH not connect"
@@ -36,7 +38,8 @@ data:
       ## CPU
       - alert: Internal ESXi backup CPU-High 80%
         annotations:
-          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
+          alert_title: "Internal {{ $labels.instance }} CPU Usage High"
+          description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High 80%"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "CPU Usage high"
         expr: avg without(cpu) (rate(node_cpu_seconds_total{job="Internal-esxi-backup-node-exporter", mode!="idle"}[5m])) * 100 >= 80
@@ -46,6 +49,7 @@ data:
 
       - alert: Internal ESXi backup CPU-High 90%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} CPU Usage High 90%"
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "CPU Usage high"
@@ -57,6 +61,7 @@ data:
       ##Memory
       - alert: Internal ESXi backup Memory High 80%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} Memory Usage High 80%"
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage high"
@@ -67,6 +72,7 @@ data:
 
       - alert: Internal ESXi backup Memory High 90%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} Memory Usage High 90%"
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage high"
@@ -78,6 +84,7 @@ data:
       ## Filesystem Storege
       - alert: Internal ESXi backup Filesystem Storege High 80%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} Filesystem Usage High 80%"
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Filesystem Usage high"
@@ -88,6 +95,7 @@ data:
 
       - alert: Internal ESXi backup Filesystem Storege High 90%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} Filesystem Usage High 90%"
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Filesystem Usage high"

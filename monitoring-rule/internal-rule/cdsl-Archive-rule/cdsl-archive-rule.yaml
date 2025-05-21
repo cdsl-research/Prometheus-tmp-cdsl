@@ -12,12 +12,13 @@ data:
       ### ICMP
       - alert: Internal Archive Server ICMP-Check
         annotations:
+          alert_title: "Internal {{ $labels.instance }} ICMP Check"
           description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary: "Archive Server ICMP not connect"
         expr: |-
           probe_success{job="Internal-ICMP-Archive"} == 0
-        for: 1m
+        for: 10m
         labels:
           severity: critical
 
@@ -25,63 +26,69 @@ data:
       ## CPU
       - alert: Internal Archive Server CPU-High 80%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} CPU Usage High 80%"
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "CPU Usage high"
         expr: avg without(cpu) (rate(node_cpu_seconds_total{job="Internal-archive-node-exporter", mode!="idle"}[5m])) * 100 >= 80
-        for: 3m
+        for: 10m
         labels:
           severity: warning
 
       - alert: Internal Archive Server CPU-High 90%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} CPU Usage High 90%"
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` CPU Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "CPU Usage high"
         expr: avg without(cpu) (rate(node_cpu_seconds_total{job="Internal-archive-node-exporter", mode!="idle"}[5m])) * 100 >= 90
-        for: 3m
+        for: 10m
         labels:
           severity: critical
 
       ##Memory
       - alert: Internal Archive Server Memory High 80%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} Memory Usage High 80%"
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage high"
         expr: (node_memory_MemTotal_bytes{job="Internal-archive-node-exporter"} - node_memory_MemAvailable_bytes{job="Internal-archive-node-exporter"}) / node_memory_MemTotal_bytes{job="Internal-archive-node-exporter"} * 100 >= 80
-        for: 3m
+        for: 10m
         labels:
           severity: warning
 
       - alert: Internal Archive Server Memory High 90%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} Memory Usage High 90%"
           description: "Node: `{{$labels.instance}}`, instance: `{{$labels.instance}}` Memory Usage High"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Memory Usage high"
         expr: (node_memory_MemTotal_bytes{job="Internal-archive-node-exporter"} - node_memory_MemAvailable_bytes{job="Internal-archive-node-exporter"}) / node_memory_MemTotal_bytes{job="Internal-archive-node-exporter"} * 100 >= 90
-        for: 3m
+        for: 10m
         labels:
           severity: critical
 
       ## Filesystem Storege
       - alert: Internal Archive Server Filesystem Storege High 80%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} Filesystem Usage High 80%"
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Filesystem Usage high"
         expr: (1 - (node_filesystem_avail_bytes{job="Internal-archive-node-exporter"} / node_filesystem_size_bytes{job="Internal-archive-node-exporter"}) ) * 100 >= 80
-        for: 3m
+        for: 10m
         labels:
           severity: warning
 
       - alert: Internal Archive Server Filesystem Storege High 90%
         annotations:
+          alert_title: "Internal {{ $labels.instance }} Filesystem Usage High 90%"
           description: "Node: `{{$labels.instance}}`, device: `{{$labels.device}}` Filesystem Usage high"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary:  "Filesystem Usage high"
         expr: (1 - (node_filesystem_avail_bytes{job="Internal-archive-node-exporter"} / node_filesystem_size_bytes{job="Internal-archive-node-exporter"}) ) * 100 >= 90
-        for: 3m
+        for: 10m
         labels:
           severity: critical
 

@@ -11,6 +11,7 @@ data:
       ### ICMP
       - alert: Internal Firewall ICMP Check
         annotations:
+          alert_title: "Internal {{ $labels.instance }} ICMP Check"
           description: "Instance {{$labels.instance}}"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary: "Firewall ICMP not connect"

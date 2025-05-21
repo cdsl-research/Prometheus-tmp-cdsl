@@ -60,6 +60,16 @@ data:
           fail_if_not_ssl: true
           tls_config:
             insecure_skip_verify: true  # 証明書エラーを無視する設定
+      dns_name_resolution:
+        prober: dns
+        timeout: 5s
+        dns:
+          transport_protocol: "udp"
+          preferred_ip_protocol: "ip4"
+          query_name: "monitoring-master-ml"
+          query_type: "A"
+          valid_rcodes:
+            - NOERROR
 
 ---
 # Source: prometheus-blackbox-exporter/templates/service.yaml
@@ -87,7 +97,6 @@ spec:
     app.kubernetes.io/instance: blackbox
 
 ---
-# Source: prometheus-blackbox-exporter/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -148,6 +157,13 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /config
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "400Mi"
       volumes:
       - name: config
         configMap:

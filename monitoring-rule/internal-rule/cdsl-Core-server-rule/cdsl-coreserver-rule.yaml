@@ -11,11 +11,24 @@ data:
       ### ICMP
       - alert: Internal Core Server ICMP Check
         annotations:
+          alert_title: "Internal {{ $labels.instance }} ICMP Check"
           description: "Instance {{$labels.instance}} not connect"
           runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
           summary: "Core Server ICMP not connect"
         expr: |-
           probe_success{job="Internal-ICMP-Core-server"} == 0
+        for: 3m
+        labels:
+          severity: critical
+            
+      - alert: Internal ESXi ICMP Check
+        annotations:
+          alert_title: "Internal {{ $labels.instance }} ICMP Check"
+          description: "Instance {{$labels.instance}} not connect"
+          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
+          summary: "ESXi ICMP not connect"
+        expr: |-
+          probe_success{job="Internal-ICMP-ESXi-Host-Core"} == 0
         for: 3m
         labels:
           severity: critical
